@@ -19,7 +19,7 @@ SHELLYPLUG_IP = os.getenv('SHELLYPLUG_IP')
 while True:
     try:
         data = requests.get(f'http://{SHELLYPLUG_IP}/meter/0').json()
-        logger.info(data)
+        logger.info('Received data from Shelly Plug', extra=data)
         cur.execute('INSERT INTO meter_0 (timestamp, power, overpower, is_valid) VALUES (%s, %s, %s, %s)',
                     (data['timestamp'], data['power'], data['overpower'], data['is_valid']))
         conn.commit()
@@ -29,4 +29,7 @@ while True:
         break
     except Exception as e:
         logger.error(e)
-        sleep(10)
+        conn.close()
+        conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+        cur = conn.cursor()
+        sleep(1)
