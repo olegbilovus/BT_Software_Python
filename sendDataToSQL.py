@@ -3,6 +3,7 @@ import requests
 import psycopg2
 import logs
 
+from datetime import datetime
 from dotenv import load_dotenv
 from time import sleep
 
@@ -19,6 +20,8 @@ SHELLYPLUG_IP = os.getenv('SHELLYPLUG_IP')
 while True:
     try:
         data = requests.get(f'http://{SHELLYPLUG_IP}/meter/0').json()
+        if data['timestamp'] == 0:
+            data['timestamp'] = datetime.now().timestamp()
         logger.info('Received data from Shelly Plug', extra=data)
         cur.execute('INSERT INTO meter_0 (timestamp, power, overpower, is_valid) VALUES (%s, %s, %s, %s)',
                     (data['timestamp'], data['power'], data['overpower'], data['is_valid']))
