@@ -72,7 +72,6 @@ class PowerLive:
 
 
 if __name__ == '__main__':
-
     def buffer_length_type(value):
         ivalue = int(value)
         if ivalue < 2:
@@ -82,7 +81,7 @@ if __name__ == '__main__':
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-hr', '--horizontal', action='store_true')
+    parser.add_argument('-hr', '--horizontal', action='store_true', help='Horizontal layout, default is vertical')
     parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
                         help='Buffer length in seconds, default is 30, must be a positive int value >= 2')
     args = parser.parse_args()
