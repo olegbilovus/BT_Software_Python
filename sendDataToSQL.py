@@ -17,11 +17,13 @@ cur.execute('SELECT version()')
 logger.info(cur.fetchone())
 
 SHELLYPLUG_IP = os.getenv('SHELLYPLUG_IP')
+requests.get(f'http://{SHELLYPLUG_IP}/relay/0?turn=on')
+logger.info(f'Shelly Plug turned on')
 while True:
     try:
         data = requests.get(f'http://{SHELLYPLUG_IP}/meter/0').json()
         if data['timestamp'] == 0:
-            data['timestamp'] = datetime.utcnow().timestamp()
+            data['timestamp'] = datetime.now().timestamp()
         logger.info('Received data from Shelly Plug', extra=data)
         cur.execute('INSERT INTO meter_0 (timestamp, power, overpower, is_valid) VALUES (%s, %s, %s, %s)',
                     (data['timestamp'], data['power'], data['overpower'], data['is_valid']))
@@ -29,6 +31,8 @@ while True:
         sleep(1)
     except KeyboardInterrupt:
         logger.info('KeyboardInterrupt')
+        requests.get(f'http://{SHELLYPLUG_IP}/relay/0?turn=off')
+        logger.info(f'Shelly Plug turned off')
         break
     except Exception as e:
         logger.error(e)
