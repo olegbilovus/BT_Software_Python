@@ -72,8 +72,18 @@ class PowerLive:
 
 
 if __name__ == '__main__':
+
+    def buffer_length_type(value):
+        ivalue = int(value)
+        if ivalue < 2:
+            raise argparse.ArgumentTypeError(f'{value} is an invalid positive int value, must be >= 2')
+
+        return ivalue
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-hr', '--horizontal', action='store_true')
-    parser.add_argument('-b', '--buffer_length', type=int, default=30)
+    parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
+                        help='Buffer length in seconds, default is 30, must be a positive int value >= 2')
     args = parser.parse_args()
     PowerLive(args.buffer_length, not args.horizontal)
