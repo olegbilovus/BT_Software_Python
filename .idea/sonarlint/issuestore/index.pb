@@ -12,3 +12,7 @@
 sendDataToSQL.py,6\7\67bc16475d40e9abfe4353be347051d631978bec
 7
 logs.py,8\2\821fb6c93a910f9dc62e21cad182f84bf723e6ba
+w
+G.idea/sonarlint/issuestore/8/2/821fb6c93a910f9dc62e21cad182f84bf723e6ba,1\6\166dde0b200d8d374607b4e5748c93789039ffe1
+w
+G.idea/sonarlint/issuestore/6/7/67bc16475d40e9abfe4353be347051d631978bec,8\0\80564755c61d95e63d74530df7b12117d34bffda

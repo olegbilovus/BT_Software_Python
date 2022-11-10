@@ -12,8 +12,9 @@ SHELLYPLUG_IP = os.getenv('SHELLYPLUG_IP')
 
 
 class PowerLive:
-    def __init__(self, buffer_length, vertical=True):
+    def __init__(self, buffer_length, vertical=True, verbose=False):
         self.buffer_length = buffer_length
+        self.verbose = verbose
 
         self.x1 = [0]
         self.y1 = [0]
@@ -42,7 +43,8 @@ class PowerLive:
 
     def update(self, frame):
         data = requests.get(f'http://{SHELLYPLUG_IP}/meter/0').json()
-        print(data)
+        if self.verbose:
+            print(data)
         self.update_append(data)
         self.update_no_append(data)
 
@@ -83,5 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('-hr', '--horizontal', action='store_true', help='horizontal layout, default is vertical')
     parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
                         help='buffer length in seconds, must be a positive int value >= 2. Default is 30')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='verbose mode, print data to console. Default is False')
     args = parser.parse_args()
     PowerLive(args.buffer_length, not args.horizontal)
