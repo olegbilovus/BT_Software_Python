@@ -1,7 +1,6 @@
 import os
 import requests
 import matplotlib.pyplot as plt
-import numpy as np
 import argparse
 
 from matplotlib.animation import FuncAnimation
@@ -16,10 +15,10 @@ class PowerLive:
     def __init__(self, buffer_length, vertical=True):
         self.buffer_length = buffer_length
 
-        self.x1 = np.zeros(1, dtype=int)
-        self.y1 = np.zeros(1, dtype=np.float32)
-        self.x2 = np.zeros(self.buffer_length, dtype=int)
-        self.y2 = np.zeros(self.buffer_length, dtype=np.float32)
+        self.x1 = [0]
+        self.y1 = [0]
+        self.x2 = [0 for _ in range(self.buffer_length + 1)]
+        self.y2 = [0 for _ in range(self.buffer_length + 1)]
 
         if vertical:
             self.fig, (self.ax1, self.ax2) = plt.subplots(2)
@@ -50,15 +49,15 @@ class PowerLive:
         return self.ln1, self.ln2
 
     def update_append(self, data):
-        self.x1 = np.append(self.x1, self.x1[-1] + 1)
-        self.y1 = np.append(self.y1, data['power'])
+        self.x1.append(self.x1[-1] + 1)
+        self.y1.append(data['power'])
         self.update_set_data(self.ax1, self.ln1, self.x1, self.y1)
 
     def update_no_append(self, data):
-        self.x2 = np.roll(self.x2, -1)
-        self.x2[-1] = self.x2[-2] + 1
-        self.y2 = np.roll(self.y2, -1)
-        self.y2[-1] = data['power']
+        self.x2.pop(0)
+        self.x2.append(self.x2[-1] + 1)
+        self.y2.pop(0)
+        self.y2.append(data['power'])
         self.update_set_data(self.ax2, self.ln2, self.x2, self.y2)
 
     @staticmethod
