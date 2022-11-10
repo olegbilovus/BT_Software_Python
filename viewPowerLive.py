@@ -5,6 +5,7 @@ import argparse
 
 from matplotlib.animation import FuncAnimation
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ class PowerLive:
         else:
             self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2)
 
-        self.fig.suptitle('Shelly Plug Power Live')
+        self.fig.suptitle(f'Shelly Plug Power Live - {datetime.utcnow()}')
         self.ax1.set_xlabel('Time (s)')
         self.ax1.set_ylabel('Power (W)')
         self.ax1.grid()
