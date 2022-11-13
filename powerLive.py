@@ -131,7 +131,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
                         help='buffer length in seconds, must be a positive int value >= 2. Default is 30')
     parser.add_argument('-hr', '--horizontal', action='store_true', help='horizontal layout, default is vertical')
-    parser.add_argument('-db_n', '--db_name', default=os.getenv('DB_NAME'), help='SQLite DB name')
+    parser.add_argument('--db', default=os.getenv('DB_NAME'), help='SQLite DB name')
     parser.add_argument('--db_reset', action='store_true', help='reset SQLite DB')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode, print data to console. Default is False')
