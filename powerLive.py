@@ -103,7 +103,6 @@ class PowerLive:
         self.conn.commit()
 
     def __del__(self):
-        requests.get(f'http://{self.ip}/relay/0?turn=off')
         if self.db_name:
             self.conn.close()
 
