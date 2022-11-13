@@ -140,5 +140,5 @@ if __name__ == '__main__':
     if not args.ip:
         exit('Shelly Plug IP is not set, please set it in .env file or pass it as argument')
 
-    PowerLive(args.ip, args.buffer_length, vertical=not args.horizontal, db_name=args.db_name, db_reset=args.db_reset,
+    PowerLive(args.ip, args.buffer_length, vertical=not args.horizontal, db_name=args.db, db_reset=args.db_reset,
               verbose=args.verbose)
