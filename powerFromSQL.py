@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description='Plot power data from SQL of a Shel
 parser.add_argument('--db', type=str, default=os.getenv('DB_NAME'), help='Database name')
 parser.add_argument('--start', type=str, default=None, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, default=None, help='End date, format: YYYY-MM-DD HH:MM:SS')
+parser.add_argument('--time', action='store_true', help='Plot time instead of seconds since captures on x axis')
 args = parser.parse_args()
 
 conn = sqlite3.connect(args.db)
@@ -33,19 +34,28 @@ data = cur.fetchall()
 conn.close()
 
 plot_data = [[], []]
-for row in data:
-    plot_data[0].append(datetime.fromisoformat(row[0]))
-    plot_data[1].append(row[1])
+if args.time:
+    for row in data:
+        if row[2] == 1:
+            plot_data[0].append(datetime.fromisoformat(row[0]))
+            plot_data[1].append(row[1])
+else:
+    for i, row in enumerate(data):
+        if row[2] == 1:
+            plot_data[0].append(i)
+            plot_data[1].append(row[1])
 
 fig, ax = plt.subplots()
-xformatter = mdates.DateFormatter('%H:%M:%S')
-plt.gcf().axes[0].xaxis.set_major_formatter(xformatter)
+if args.time:
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+    ax.set_xlabel('Time (HH:MM:SS)')
+else:
+    ax.set_xlabel('Seconds since capture')
 ax.grid()
 head, tail = ntpath.split(args.db)
 file_name = tail or ntpath.basename(head)
 fig.suptitle(
     f'Shelly Plug Power from {file_name} [{datetime.fromisoformat(data[0][0])} - {datetime.fromisoformat(data[-1][0])}] (UTC)')
-ax.set_xlabel('Time (HH:MM:SS)')
 ax.set_ylabel('Power (W)')
 ax.plot(plot_data[0], plot_data[1], 'g-')
 

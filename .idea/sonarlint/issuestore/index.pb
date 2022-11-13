@@ -5,16 +5,10 @@
 ,.idea/inspectionProfiles/Project_Default.xml,4\9\496a238a6afa168dbaf6efd37bb459331589579c
 9
 	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
-w
-G.idea/sonarlint/issuestore/4/3/43cfa970355bd6397c855d72030ca01ed6edda7f,c\e\ce25b889bcb2512b5d7adb91234413bbdd914003
 :
 
 .gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
 A
 identifier.sqlite,5\7\57eb79cd3d4a5ae040525478ea4fe859974bbc3c
-w
-G.idea/sonarlint/issuestore/c/e/ce25b889bcb2512b5d7adb91234413bbdd914003,e\4\e4252f7c7453b97db101bef755c4c8904dc4e0aa
-w
-G.idea/sonarlint/issuestore/5/6/5606d2bbb55021eb98ffdfbf81f9cbe976af4876,4\c\4c0ba90192dafc560739d6c5d6edf98df691335b
 @
 requirements.txt,1\9\19359a61ae2446b51b549167b014da2fcf265768
