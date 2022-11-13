@@ -1,13 +1,13 @@
-import os
-import requests
-import matplotlib.pyplot as plt
 import argparse
+import os
 import re
 import sqlite3
-
-from matplotlib.animation import FuncAnimation
-from dotenv import load_dotenv
 from datetime import datetime
+
+import matplotlib.pyplot as plt
+import requests
+from dotenv import load_dotenv
+from matplotlib.animation import FuncAnimation
 
 
 class PowerLive:
@@ -36,6 +36,7 @@ class PowerLive:
                 self.cur.execute('DELETE FROM meter_0')
                 self.conn.commit()
                 print('Deleted all rows from table meter_0')
+            self.cur.execute('INSERT INTO meter_0 VALUES (?, ?, ?, ?)', (datetime.utcnow(), -1, 0, 0))
             print(f'Sending data to {db_name}')
 
         self.x1 = [0]
