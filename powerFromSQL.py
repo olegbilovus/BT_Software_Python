@@ -1,4 +1,5 @@
 import argparse
+import ntpath
 import os
 import sqlite3
 from datetime import datetime
@@ -40,8 +41,10 @@ fig, ax = plt.subplots()
 xformatter = mdates.DateFormatter('%H:%M:%S')
 plt.gcf().axes[0].xaxis.set_major_formatter(xformatter)
 ax.grid()
+head, tail = ntpath.split(args.db)
+file_name = tail or ntpath.basename(head)
 fig.suptitle(
-    f'Shelly Plug Power from {args.db} [{datetime.fromisoformat(data[0][0])} - {datetime.fromisoformat(data[-1][0])}] (UTC)')
+    f'Shelly Plug Power from {file_name} [{datetime.fromisoformat(data[0][0])} - {datetime.fromisoformat(data[-1][0])}] (UTC)')
 ax.set_xlabel('Time (HH:MM:SS)')
 ax.set_ylabel('Power (W)')
 ax.plot(plot_data[0], plot_data[1], 'g-')
