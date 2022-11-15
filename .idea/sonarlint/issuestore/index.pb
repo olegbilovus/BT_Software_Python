@@ -12,9 +12,3 @@ A
 identifier.sqlite,5\7\57eb79cd3d4a5ae040525478ea4fe859974bbc3c
 @
 requirements.txt,1\9\19359a61ae2446b51b549167b014da2fcf265768
-w
-G.idea/sonarlint/issuestore/5/7/57eb79cd3d4a5ae040525478ea4fe859974bbc3c,b\b\bb68023bb61e02706032ad321b5430f42113f3e5
-w
-G.idea/sonarlint/issuestore/a/5/a5cc2925ca8258af241be7e5b0381edf30266302,e\d\ed67eb178d523a4b3f117dcbe0eda5196367ceec
-w
-G.idea/sonarlint/issuestore/1/9/19359a61ae2446b51b549167b014da2fcf265768,b\f\bf26e38c6077dc99b98bdb7696e470de283480be

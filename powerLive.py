@@ -40,7 +40,7 @@ class PowerLive:
             print(f'Sending data to {db_name}')
 
         self.x1 = [0]
-        self.y1 = []
+        self.y1 = [0]
         self.x2 = [0 for _ in range(self.buffer_length + 1)]
         self.y2 = [0 for _ in range(self.buffer_length + 1)]
 
@@ -59,8 +59,6 @@ class PowerLive:
         self.ln1, = self.ax1.plot([], [], 'g-')
         self.ln2, = self.ax2.plot([], [], 'g-')
         self.ani = FuncAnimation(self.fig, self.update, interval=1000)
-
-        self.y1.append(requests.get(self._ip_data).json()['power'])
 
         plt.show()
 
