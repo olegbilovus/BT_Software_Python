@@ -51,6 +51,26 @@ class ShellyPlugS(Plug):
         return not requests.get(f'http://{self.ip}/relay/0?turn=off').json()['ison']
 
 
+class NetioPowerCableRest101(Plug):
+    def __init__(self, ip):
+        self.ip = ip
+
+    @property
+    def name(self):
+        return 'Netio Power Cable REST 101'
+
+    def get_load(self):
+        return requests.get(f'http://{self.ip}/netio.json').json()['Outputs'][0]['Load']
+
+    def turn_on(self):
+        return requests.post(f'http://{self.ip}/netio.json',
+                             json={'Outputs': [{'ID': 1, 'Action': 1}]}).status_code == 200
+
+    def turn_off(self):
+        return requests.post(f'http://{self.ip}/netio.json',
+                             json={'Outputs': [{'ID': 1, 'Action': 0}]}).status_code == 200
+
+
 class PowerLive:
     def __init__(self, plug: Plug, buffer_length, vertical=True, db_name=None, db_reset=False, verbose=False):
         self.plug = plug
@@ -166,6 +186,8 @@ if __name__ == '__main__':
     parser.add_argument('-ip', type=ip_type, default=os.getenv('PLUG_IP'), help='Plug IP')
     parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
                         help='buffer length in seconds, must be a positive int value >= 2. Default is 30')
+    parser.add_argument('--plug_type', choices=[1, 2], default=1, type=int,
+                        help='plug type, 1 for Shelly Plug S, 2 for Netio PowerCable REST 101x. Default is 1')
     parser.add_argument('-hr', '--horizontal', action='store_true', help='horizontal layout, default is vertical')
     parser.add_argument('-db', default=os.getenv('DB_NAME'), help='SQLite DB name')
     parser.add_argument('--db_reset', action='store_true', help='reset SQLite DB')
@@ -176,6 +198,13 @@ if __name__ == '__main__':
     if not args.ip:
         exit('IP is not set, please set it in .env file or pass it as argument')
 
-    shelly_plug = ShellyPlugS(args.ip)
-    PowerLive(shelly_plug, args.buffer_length, vertical=not args.horizontal, db_name=args.db, db_reset=args.db_reset,
+    match args.plug_type:
+        case 1:
+            plug_chosen = ShellyPlugS(args.ip)
+        case 2:
+            plug_chosen = NetioPowerCableRest101(args.ip)
+        case _:
+            exit('Invalid plug type')
+
+    PowerLive(plug_chosen, args.buffer_length, vertical=not args.horizontal, db_name=args.db, db_reset=args.db_reset,
               verbose=args.verbose)

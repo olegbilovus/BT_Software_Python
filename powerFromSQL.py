@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-parser = argparse.ArgumentParser(description='Plot power data from SQL of a Shelly Plug')
+parser = argparse.ArgumentParser(description='Plot power data from SQL')
 parser.add_argument('--db', type=str, default=os.getenv('DB_NAME'), help='Database name')
 parser.add_argument('--start', type=str, default=None, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, default=None, help='End date, format: YYYY-MM-DD HH:MM:SS')
@@ -19,7 +19,7 @@ args = parser.parse_args()
 
 conn = sqlite3.connect(args.db)
 cur = conn.cursor()
-SQL_BASE = 'SELECT timestamp, power, is_valid FROM meter_0'
+SQL_BASE = 'SELECT timestamp, power, is_valid FROM plug_load'
 
 if args.start and args.end:
     cur.execute(SQL_BASE + ' WHERE timestamp BETWEEN ? AND ?', (args.start, args.end))
@@ -55,7 +55,7 @@ ax.grid()
 head, tail = ntpath.split(args.db)
 file_name = tail or ntpath.basename(head)
 fig.suptitle(
-    f'Shelly Plug Power from {file_name} [{datetime.fromisoformat(data[0][0])} - {datetime.fromisoformat(data[-1][0])}] (UTC)')
+    f'Plug Power from {file_name} [{datetime.fromisoformat(data[0][0])} - {datetime.fromisoformat(data[-1][0])}] (UTC)')
 ax.set_ylabel('Power (W)')
 ax.plot(plot_data[0], plot_data[1], 'g-')
 
