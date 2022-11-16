@@ -184,13 +184,13 @@ if __name__ == '__main__':
     load_dotenv()
 
     parser = argparse.ArgumentParser('Plug Power Live')
-    parser.add_argument('-ip', type=ip_type, default=os.getenv('PLUG_IP'), help='Plug IP')
+    parser.add_argument('--ip', type=ip_type, default=os.getenv('PLUG_IP'), help='Plug IP')
     parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
                         help='buffer length in seconds, must be a positive int value >= 2. Default is 30')
     parser.add_argument('--plug_type', choices=[1, 2], default=1, type=int,
                         help='plug type, 1 for Shelly Plug S, 2 for Netio PowerCable REST 101x. Default is 1')
-    parser.add_argument('-hr', '--horizontal', action='store_true', help='horizontal layout, default is vertical')
-    parser.add_argument('-db', default=os.getenv('DB_NAME'), help='SQLite DB name')
+    parser.add_argument('--hr', '--horizontal', action='store_true', help='horizontal layout, default is vertical')
+    parser.add_argument('--db', default=os.getenv('DB_NAME'), help='SQLite DB name')
     parser.add_argument('--db_reset', action='store_true', help='reset SQLite DB')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode, print data to console. Default is False')
