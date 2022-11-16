@@ -15,19 +15,19 @@ class Plug(ABC):
 
     @property
     @abstractmethod
-    def name(self):
+    def name(self) -> str:
         pass
 
     @abstractmethod
-    def get_load(self):
+    def get_load(self) -> float:
         pass
 
     @abstractmethod
-    def turn_on(self):
+    def turn_on(self) -> bool:
         pass
 
     @abstractmethod
-    def turn_off(self):
+    def turn_off(self) -> bool:
         pass
 
 
@@ -116,7 +116,8 @@ class PowerLive:
         self.ln2, = self.ax2.plot([], [], 'g-')
         self.ani = FuncAnimation(self.fig, self.update, interval=1000)
 
-        self.plug.turn_on()
+        if not self.plug.turn_on():
+            exit('Failed to turn on plug')
 
         plt.show()
 
