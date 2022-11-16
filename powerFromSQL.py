@@ -11,9 +11,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 parser = argparse.ArgumentParser(description='Plot power data from SQL')
-parser.add_argument('--db', type=str, default=os.getenv('DB_NAME'), help='Database name')
-parser.add_argument('--start', type=str, default=None, help='Start date, format: YYYY-MM-DD HH:MM:SS')
-parser.add_argument('--end', type=str, default=None, help='End date, format: YYYY-MM-DD HH:MM:SS')
+parser.add_argument('--db', type=str, default=os.getenv('DB_NAME'),
+                    help='SQLite DB file name. Default: DB_NAME env var ')
+parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
+parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--time', action='store_true', help='Plot time instead of seconds since captures on x axis')
 args = parser.parse_args()
 
