@@ -204,13 +204,11 @@ if __name__ == '__main__':
     if not args.ip:
         exit('IP is not set, please set it in .env file or pass it as argument')
 
-    match args.plug_type:
-        case 1:
-            plug_chosen = ShellyPlugS(args.ip)
-        case 2:
-            plug_chosen = NetioPowerCableRest101(args.ip)
-        case _:
-            exit('Invalid plug type')
+    if args.plug_type == 2:
+        plug_chosen = NetioPowerCableREST101x(args.ip)
+    else:
+        plug_chosen = ShellyPlugS(args.ip)
+            
 
     PowerLive(plug_chosen, args.buffer_length, vertical=not args.hr, db_name=args.db, db_reset=args.db_reset,
               verbose=args.verbose)
