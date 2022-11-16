@@ -95,10 +95,10 @@ class PowerLive:
             self.cur.execute('INSERT INTO plug_load VALUES (?, ?, ?)', (datetime.utcnow(), 0, 0))
             print(f'Data will be saved to {db_name}')
 
-        self.x1 = [0]
-        self.y1 = [0]
-        self.x2 = [0 for _ in range(self.buffer_length + 1)]
-        self.y2 = [0 for _ in range(self.buffer_length + 1)]
+        self.x1 = [1]
+        self.y1 = [self.plug.get_load()]
+        self.x2 = [1]
+        self.y2 = [self.y1[0]]
 
         if vertical:
             self.fig, (self.ax1, self.ax2) = plt.subplots(2)
@@ -143,10 +143,14 @@ class PowerLive:
     # requires 2 operations on the list and additional space for the list, compared to the Slice which would requires
     # b-a operations.
     def update_buffer_graph(self, data):
-        self.x2.pop(0)
-        self.x2.append(self.x2[-1] + 1)
-        self.y2.pop(0)
-        self.y2.append(data['power'])
+        if len(self.x2) < self.buffer_length:
+            self.x2.append(self.x2[-1] + 1)
+            self.y2.append(data['power'])
+        else:
+            self.x2.pop(0)
+            self.x2.append(self.x2[-1] + 1)
+            self.y2.pop(0)
+            self.y2.append(data['power'])
         self.update_set_data(self.ax2, self.ln2, self.x2, self.y2)
 
     @staticmethod
