@@ -205,7 +205,7 @@ if __name__ == '__main__':
         exit('IP is not set, please set it in .env file or pass it as argument')
 
     if args.plug_type == 2:
-        plug_chosen = NetioPowerCableREST101x(args.ip)
+        plug_chosen = NetioPowerCableRest101(args.ip)
     else:
         plug_chosen = ShellyPlugS(args.ip)
             
