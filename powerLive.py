@@ -34,41 +34,43 @@ class Plug(ABC):
 class ShellyPlugS(Plug):
     def __init__(self, ip):
         self.ip = ip
+        self.session = requests.Session()
 
     @property
     def name(self):
         return 'Shelly Plug S'
 
     def get_load(self):
-        return requests.get(f'http://{self.ip}/meter/0').json()['power']
+        return session.get(f'http://{self.ip}/meter/0').json()['power']
 
     def turn_on(self):
-        requests.get(f'http://{self.ip}/settings?led_status_disable=false')
-        requests.get(f'http://{self.ip}/settings?led_power_disable=false')
-        return requests.get(f'http://{self.ip}/relay/0?turn=on').json()['ison']
+        session.get(f'http://{self.ip}/settings?led_status_disable=false')
+        session.get(f'http://{self.ip}/settings?led_power_disable=false')
+        return session.get(f'http://{self.ip}/relay/0?turn=on').json()['ison']
 
     def turn_off(self):
-        return not requests.get(f'http://{self.ip}/relay/0?turn=off').json()['ison']
+        return not session.get(f'http://{self.ip}/relay/0?turn=off').json()['ison']
 
 
 class NetioPowerCableRest101(Plug):
     def __init__(self, ip):
         self.ip = ip
+        self.session = requests.Session()
 
     @property
     def name(self):
         return 'Netio Power Cable REST 101'
 
     def get_load(self):
-        return requests.get(f'http://{self.ip}/netio.json').json()['Outputs'][0]['Load']
+        return session.get(f'http://{self.ip}/netio.json').json()['Outputs'][0]['Load']
 
     def turn_on(self):
-        return requests.post(f'http://{self.ip}/netio.json',
-                             json={'Outputs': [{'ID': 1, 'Action': 1}]}).status_code == 200
+        return session.post(f'http://{self.ip}/netio.json',
+                            json={'Outputs': [{'ID': 1, 'Action': 1}]}).status_code == 200
 
     def turn_off(self):
-        return requests.post(f'http://{self.ip}/netio.json',
-                             json={'Outputs': [{'ID': 1, 'Action': 0}]}).status_code == 200
+        return session.post(f'http://{self.ip}/netio.json',
+                            json={'Outputs': [{'ID': 1, 'Action': 0}]}).status_code == 200
 
 
 class PowerLive:
@@ -208,7 +210,6 @@ if __name__ == '__main__':
         plug_chosen = NetioPowerCableRest101(args.ip)
     else:
         plug_chosen = ShellyPlugS(args.ip)
-            
 
     PowerLive(plug_chosen, args.buffer_length, vertical=not args.hr, db_name=args.db, db_reset=args.db_reset,
               verbose=args.verbose)
