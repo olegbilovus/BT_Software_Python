@@ -41,15 +41,15 @@ class ShellyPlugS(Plug):
         return 'Shelly Plug S'
 
     def get_load(self):
-        return session.get(f'http://{self.ip}/meter/0').json()['power']
+        return self.session.get(f'http://{self.ip}/meter/0').json()['power']
 
     def turn_on(self):
-        session.get(f'http://{self.ip}/settings?led_status_disable=false')
-        session.get(f'http://{self.ip}/settings?led_power_disable=false')
-        return session.get(f'http://{self.ip}/relay/0?turn=on').json()['ison']
+        self.session.get(f'http://{self.ip}/settings?led_status_disable=false')
+        self.session.get(f'http://{self.ip}/settings?led_power_disable=false')
+        return self.session.get(f'http://{self.ip}/relay/0?turn=on').json()['ison']
 
     def turn_off(self):
-        return not session.get(f'http://{self.ip}/relay/0?turn=off').json()['ison']
+        return not self.session.get(f'http://{self.ip}/relay/0?turn=off').json()['ison']
 
 
 class NetioPowerCableRest101(Plug):
@@ -62,14 +62,14 @@ class NetioPowerCableRest101(Plug):
         return 'Netio Power Cable REST 101'
 
     def get_load(self):
-        return session.get(f'http://{self.ip}/netio.json').json()['Outputs'][0]['Load']
+        return self.session.get(f'http://{self.ip}/netio.json').json()['Outputs'][0]['Load']
 
     def turn_on(self):
-        return session.post(f'http://{self.ip}/netio.json',
+        return self.session.post(f'http://{self.ip}/netio.json',
                             json={'Outputs': [{'ID': 1, 'Action': 1}]}).status_code == 200
 
     def turn_off(self):
-        return session.post(f'http://{self.ip}/netio.json',
+        return self.session.post(f'http://{self.ip}/netio.json',
                             json={'Outputs': [{'ID': 1, 'Action': 0}]}).status_code == 200
 
 
