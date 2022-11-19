@@ -36,12 +36,14 @@ class ShellyPlugS(Plug):
         self.ip = ip
         self.session = requests.Session()
 
+        self._url_load = f'http://{self.ip}/meter/0'
+
     @property
     def name(self):
         return 'Shelly Plug S'
 
     def get_load(self):
-        return self.session.get(f'http://{self.ip}/meter/0').json()['power']
+        return self.session.get(self._url_load).json()['power']
 
     def turn_on(self):
         self.session.get(f'http://{self.ip}/settings?led_status_disable=false')
@@ -57,20 +59,22 @@ class NetioPowerCableRest101(Plug):
         self.ip = ip
         self.session = requests.Session()
 
+        self._url_load = f'http://{self.ip}/netio.json'
+
     @property
     def name(self):
         return 'Netio Power Cable REST 101'
 
     def get_load(self):
-        return self.session.get(f'http://{self.ip}/netio.json').json()['Outputs'][0]['Load']
+        return self.session.get(self._url_load).json()['Outputs'][0]['Load']
 
     def turn_on(self):
         return self.session.post(f'http://{self.ip}/netio.json',
-                            json={'Outputs': [{'ID': 1, 'Action': 1}]}).status_code == 200
+                                 json={'Outputs': [{'ID': 1, 'Action': 1}]}).status_code == 200
 
     def turn_off(self):
         return self.session.post(f'http://{self.ip}/netio.json',
-                            json={'Outputs': [{'ID': 1, 'Action': 0}]}).status_code == 200
+                                 json={'Outputs': [{'ID': 1, 'Action': 0}]}).status_code == 200
 
 
 class PowerLive:
@@ -108,14 +112,18 @@ class PowerLive:
             self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2)
 
         self.fig.suptitle(f'{self.plug.name} Power Live [{datetime.utcnow()}] (UTC)')
-        self.ax1.set_xlabel('Time (s)')
-        self.ax1.set_ylabel('Power (W)')
+        x1_label = 'Seconds since capture'
+        self.ax1.set_xlabel(x1_label)
+        y1_label = 'Power (W)'
+        self.ax1.set_ylabel(y1_label)
         self.ax1.grid()
-        self.ax2.set_xlabel(f'Time (s), Buffer Length: {self.buffer_length}s')
-        self.ax2.set_ylabel('Power (W)')
+        x2_label = f'{x1_label}, Buffer Length: {self.buffer_length}s'
+        self.ax2.set_xlabel(x2_label)
+        self.ax2.set_ylabel(y1_label)
         self.ax2.grid()
-        self.ln1, = self.ax1.plot([], [], 'g-')
-        self.ln2, = self.ax2.plot([], [], 'g-')
+        line_style = 'g-'
+        self.ln1, = self.ax1.plot([], [], line_style)
+        self.ln2, = self.ax2.plot([], [], line_style)
         self.ani = FuncAnimation(self.fig, self.update, interval=1000)
 
         if not self.plug.turn_on():
@@ -139,11 +147,6 @@ class PowerLive:
         self.y1.append(data['power'])
         self.update_set_data(self.ax1, self.ln1, self.x1, self.y1)
 
-    # A better solution would be to use the original data in x1 and y1 and pass to the buffer only the indexes.
-    # But it seems it can not be done in Python. If you use Slice operator, it will create a copy of the list arr[a:b]
-    # from index a to b which means at every interval a list of length b-a will be created. The current solution only
-    # requires 2 operations on the list and additional space for the list, compared to the Slice which would requires
-    # b-a operations.
     def update_buffer_graph(self, data):
         if len(self.x2) < self.buffer_length:
             self.x2.append(self.x2[-1] + 1)
