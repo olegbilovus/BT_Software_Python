@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1"></script>
+    <title>ChartJS</title>
+</head>
+<body>
+
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+
+<script>
+    const labels = {{labels}};
+
+    const data = {
+        labels: labels,
+        datasets: {{datasets}}
+    }
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Power (W)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Seconds since capture'
+                    }
+                }
+            }
+        }
+    };
+</script>
+
+
+<script>
+    const myChart = new Chart(
+        document.getElementById('myChart'),
+        config
+    );
+</script>
+
+</body>
+</html>
