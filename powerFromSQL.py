@@ -4,6 +4,7 @@ import ntpath
 import os
 import sqlite3
 from datetime import datetime
+import webbrowser
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -60,6 +61,8 @@ if args.chartjs:
     with open('chartjs.html', 'w') as f:
         f.write(template.render(labels=[i for i in range(1, max_number_of_rows + 1)],
                                 datasets=json.dumps(datasets)))
+
+    webbrowser.open('file://' + os.path.realpath('chartjs.html'))
 
 if args.matplotlib:
     for dataset in datasets:
