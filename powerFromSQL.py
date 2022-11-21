@@ -1,13 +1,13 @@
 import argparse
 import json
-import ntpath
 import os
 import sqlite3
-from datetime import datetime
 import webbrowser
+from datetime import datetime
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import utils
 from dotenv import load_dotenv
 from jinja2 import Template, Environment, FileSystemLoader
 
@@ -43,7 +43,7 @@ for db_name in args.db:
     else:
         cur.execute(SQL_BASE + ORDER_BY)
 
-    datasets.append({'data': cur.fetchall(), 'label': ntpath.basename(db_name)})
+    datasets.append({'data': cur.fetchall(), 'label': utils.file_name(db_name)})
     conn.close()
 
 datasets_len = len(datasets)
@@ -65,7 +65,7 @@ if args.chartjs:
             chart_datasets.append({
                 'label': dataset['label'],
                 'data': dataset['data'],
-                'fill': True
+                'fill': True if datasets_len > 1 else False,
             })
 
         f.write(template.render(labels=[i for i in range(1, max_number_of_rows + 1)],
@@ -79,18 +79,18 @@ if args.matplotlib:
 
         if datasets_len > 1:
             plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
+            plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
         else:
-            plt.plot(plot_data[0], plot_data[1], 'g-')
+            plt.plot(plot_data[0], plot_data[1], color='green')
 
     plt.xlabel('Seconds since capture')
     plt.ylabel('Power (W)')
     plt.grid()
     if datasets_len > 1:
         plt.legend()
+
     else:
-        head, tail = ntpath.split(args.db[0])
-        file_name = tail or ntpath.basename(head)
         plt.title(
-            f'Plug Power from {file_name} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
+            f'Plug Power from {utils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
 
     plt.show()
