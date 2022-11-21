@@ -58,9 +58,18 @@ for dataset in datasets:
 if args.chartjs:
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('chartjs_template.html')
+
     with open('chartjs.html', 'w') as f:
+        chart_datasets = []
+        for dataset in datasets:
+            chart_datasets.append({
+                'label': dataset['label'],
+                'data': dataset['data'],
+                'fill': True
+            })
+
         f.write(template.render(labels=[i for i in range(1, max_number_of_rows + 1)],
-                                datasets=json.dumps(datasets)))
+                                datasets=json.dumps(chart_datasets)))
 
     webbrowser.open('file://' + os.path.realpath('chartjs.html'))
 
