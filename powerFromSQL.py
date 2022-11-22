@@ -22,6 +22,10 @@ parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
 args = parser.parse_args()
 
+for db_name in args.db:
+    if not os.path.isfile(db_name):
+        exit(f'File {db_name} not found')
+
 if not args.chartjs and not args.matplotlib:
     print('No chart library selected, using matplotlib')
     args.matplotlib = True
@@ -29,7 +33,6 @@ if not args.chartjs and not args.matplotlib:
 datasets = []
 
 for db_name in args.db:
-    conn = sqlite3.connect(db_name)
     cur = conn.cursor()
     SQL_BASE = 'SELECT timestamp, power FROM plug_load WHERE is_valid = 1'
     ORDER_BY = ' ORDER BY timestamp'
