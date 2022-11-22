@@ -33,6 +33,7 @@ if not args.chartjs and not args.matplotlib:
 datasets = []
 
 for db_name in args.db:
+    conn = sqlite3.connect(db_name)
     cur = conn.cursor()
     SQL_BASE = 'SELECT timestamp, power FROM plug_load WHERE is_valid = 1'
     ORDER_BY = ' ORDER BY timestamp'
