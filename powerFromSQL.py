@@ -8,19 +8,25 @@ from datetime import datetime
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import utils
-from dotenv import load_dotenv
 from jinja2 import Template, Environment, FileSystemLoader
 
-load_dotenv()
-
 parser = argparse.ArgumentParser(description='Plot power data from SQL')
-parser.add_argument('--db', type=str, nargs='+', default=[os.getenv('DB_NAME')],
+db_grp = parser.add_mutually_exclusive_group(required=True)
+db_grp.add_argument('--db', type=str, nargs='+', default=[],
                     help='SQLite DB file name. Default: DB_NAME env var ')
+db_grp.add_argument('--db_dir', type=str, nargs='+', default=[],
+                    help='Paths to directories where to search for DB files')
 parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
 parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib')
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
 args = parser.parse_args()
+
+if args.db_dir:
+    for dir_name in args.db_dir:
+        for file in os.listdir(dir_name):
+            if file.endswith('.db'):
+                args.db.append(os.path.join(dir_name, file))
 
 for db_name in args.db:
     if not os.path.isfile(db_name):
