@@ -1,6 +1,7 @@
 import argparse
 import re
 import sqlite3
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -76,7 +77,8 @@ class NetioPowerCableRest101(Plug):
 
 
 class PowerLive:
-    def __init__(self, plug: Plug, buffer_length, vertical=True, db_name=None, db_reset=False, verbose=False):
+    def __init__(self, plug: Plug, buffer_length, vertical=True, db_name=None, db_reset=False, no_graph=False,
+                 verbose=False):
         self.plug = plug
         self.buffer_length = buffer_length
         self.verbose = verbose
@@ -99,38 +101,54 @@ class PowerLive:
             self.cur.execute('INSERT INTO plug_load VALUES (?, ?, ?)', (datetime.utcnow(), 0, 0))
             print(f'Data will be saved to {db_name}')
 
-        self.x1 = [1]
-        self.y1 = [self.plug.get_load()]
-        self.x2 = [1]
-        self.y2 = [self.y1[0]]
-
-        if vertical:
-            self.fig, (self.ax1, self.ax2) = plt.subplots(2)
-        else:
-            self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2)
-
-        self.fig.suptitle(f'{self.plug.name} Power Live [{datetime.utcnow()}] (UTC)')
-        x1_label = 'Seconds since capture'
-        self.ax1.set_xlabel(x1_label)
-        y1_label = 'Power (W)'
-        self.ax1.set_ylabel(y1_label)
-        self.ax1.grid()
-        x2_label = f'{x1_label}, Buffer Length: {self.buffer_length}s'
-        self.ax2.set_xlabel(x2_label)
-        self.ax2.set_ylabel(y1_label)
-        self.ax2.grid()
-        line_style = 'g-'
-        self.ln1, = self.ax1.plot([], [], line_style)
-        self.ln2, = self.ax2.plot([], [], line_style)
-        self.ani = FuncAnimation(self.fig, self.update, interval=1000)
-
         if not self.plug.turn_on():
             exit('Failed to turn on plug')
 
-        plt.show()
+        if not no_graph:
+            self.x1 = [1]
+            self.y1 = [self.plug.get_load()]
+            self.x2 = [1]
+            self.y2 = [self.y1[0]]
+
+            if vertical:
+                self.fig, (self.ax1, self.ax2) = plt.subplots(2)
+            else:
+                self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2)
+
+            self.fig.suptitle(f'{self.plug.name} Power Live [{datetime.utcnow()}] (UTC)')
+            x1_label = 'Seconds since capture'
+            self.ax1.set_xlabel(x1_label)
+            y1_label = 'Power (W)'
+            self.ax1.set_ylabel(y1_label)
+            self.ax1.grid()
+            x2_label = f'{x1_label}, Buffer Length: {self.buffer_length}s'
+            self.ax2.set_xlabel(x2_label)
+            self.ax2.set_ylabel(y1_label)
+            self.ax2.grid()
+            line_style = 'g-'
+            self.ln1, = self.ax1.plot([], [], line_style)
+            self.ln2, = self.ax2.plot([], [], line_style)
+            self.ani = FuncAnimation(self.fig, self.update, interval=1000)
+
+            plt.show()
+        else:
+            while True:
+                data = self.get_data()
+                if self.verbose:
+                    print(data)
+                if self.db_name:
+                    self.send_to_sql(data)
+                time.sleep(1)
+
+    def get_data(self):
+        data = {'timestamp': datetime.utcnow(), 'power': self.plug.get_load(), 'is_valid': 1}
+        if self.verbose:
+            print(data)
+
+        return data
 
     def update(self, frame):
-        data = {'timestamp': datetime.utcnow(), 'power': self.plug.get_load(), 'is_valid': 1}
+        data = self.get_data()
         if self.verbose:
             print(data)
         self.update_full_graph(data)
@@ -197,6 +215,7 @@ if __name__ == '__main__':
     parser.add_argument('--hr', action='store_true', help='horizontal layout. Default: vertical')
     parser.add_argument('--db', required=True, help='SQLite DB file name. Default: DB_NAME env var')
     parser.add_argument('--db_reset', action='store_true', help='delete all rows from DB table')
+    parser.add_argument('--no_graph', action='store_true', help='do not show graph')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode, print data to console')
     args = parser.parse_args()
@@ -207,4 +226,4 @@ if __name__ == '__main__':
         plug_chosen = ShellyPlugS(args.ip)
 
     PowerLive(plug_chosen, args.buffer_length, vertical=not args.hr, db_name=args.db, db_reset=args.db_reset,
-              verbose=args.verbose)
+              no_graph=args.no_graph, verbose=args.verbose)
