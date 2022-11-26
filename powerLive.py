@@ -84,22 +84,22 @@ class PowerLive:
         self.verbose = verbose
 
         self.db_name = db_name
-        if self.db_name:
-            self.conn = sqlite3.connect(db_name)
-            self.cur = self.conn.cursor()
-            try:
-                self.cur.execute(
-                    'CREATE TABLE plug_load (timestamp TIMESTAMP PRIMARY KEY, power REAL, is_valid BOOLEAN)')
-                self.conn.commit()
-                print('Created table')
-            except sqlite3.OperationalError:
-                pass
-            if db_reset:
-                self.cur.execute('DELETE FROM plug_load')
-                self.conn.commit()
-                print('Deleted all rows from table')
-            self.cur.execute('INSERT INTO plug_load VALUES (?, ?, ?)', (datetime.utcnow(), 0, 0))
-            print(f'Data will be saved to {db_name}')
+        self.conn = sqlite3.connect(db_name)
+        self.cur = self.conn.cursor()
+        try:
+            self.cur.execute(
+                'CREATE TABLE plug_load (timestamp TIMESTAMP PRIMARY KEY, power REAL, is_valid BOOLEAN)')
+            self.conn.commit()
+            print('Created table')
+        except sqlite3.OperationalError:
+            pass
+
+        if db_reset:
+            self.cur.execute('DELETE FROM plug_load')
+            self.conn.commit()
+            print('Deleted all rows from table')
+        self.cur.execute('INSERT INTO plug_load VALUES (?, ?, ?)', (datetime.utcnow(), 0, 0))
+        print(f'Data will be saved to {db_name}')
 
         if not self.plug.turn_on():
             exit('Failed to turn on plug')
@@ -134,10 +134,7 @@ class PowerLive:
         else:
             while True:
                 data = self.get_data()
-                if self.verbose:
-                    print(data)
-                if self.db_name:
-                    self.send_to_sql(data)
+                self.send_to_sql(data)
                 time.sleep(1)
 
     def get_data(self):
@@ -149,12 +146,9 @@ class PowerLive:
 
     def update(self, frame):
         data = self.get_data()
-        if self.verbose:
-            print(data)
         self.update_full_graph(data)
         self.update_buffer_graph(data)
-        if self.db_name:
-            self.send_to_sql(data)
+        self.send_to_sql(data)
 
         return self.ln1, self.ln2
 
@@ -164,6 +158,7 @@ class PowerLive:
         self.update_set_data(self.ax1, self.ln1, self.x1, self.y1)
 
     def update_buffer_graph(self, data):
+        # TODO: Need to refactor this
         if len(self.x2) < self.buffer_length:
             self.x2.append(self.x2[-1] + 1)
             self.y2.append(data['power'])
@@ -181,13 +176,13 @@ class PowerLive:
         ax.autoscale_view()
 
     def send_to_sql(self, data):
+        # TODO: Add option to not update in real time, but in bulk and with threads
         self.cur.execute('INSERT INTO plug_load VALUES (?, ?, ?)',
                          (data['timestamp'], data['power'], data['is_valid']))
         self.conn.commit()
 
     def __del__(self):
-        if self.db_name:
-            self.conn.close()
+        self.conn.close()
 
 
 if __name__ == '__main__':
