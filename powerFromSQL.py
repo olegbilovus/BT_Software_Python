@@ -20,6 +20,7 @@ parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
 parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib')
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
+parser.add_argument('--time', action='store_true', help='Show time on x axis')
 args = parser.parse_args()
 
 if args.db_dir:
@@ -27,6 +28,9 @@ if args.db_dir:
         for file in os.listdir(dir_name):
             if file.endswith('.db'):
                 args.db.append(os.path.join(dir_name, file))
+
+if len(args.db) > 1 and args.time:
+    raise argparse.ArgumentTypeError('Cannot use --time with more than one DB file')
 
 for db_name in args.db:
     if not os.path.isfile(db_name):
@@ -62,7 +66,13 @@ max_number_of_rows = max([len(dataset['data']) for dataset in datasets])
 for dataset in datasets:
     dataset['first_timestamp'] = dataset['data'][0][0]
     dataset['last_timestamp'] = dataset['data'][-1][0]
+
+    if args.time:
+        dataset['timestamps'] = []
+
     for i in range(len(dataset['data'])):
+        if args.time:
+            dataset['timestamps'].append(dataset['data'][i][0])
         dataset['data'][i] = dataset['data'][i][1]
 
 if args.chartjs:
@@ -84,23 +94,31 @@ if args.chartjs:
     webbrowser.open('file://' + os.path.realpath('chartjs.html'))
 
 if args.matplotlib:
-    for dataset in datasets:
-        plot_data = [[i for i in range(1, len(dataset['data']) + 1)], dataset['data']]
-
-        if datasets_len > 1:
-            plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
-            plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
+    if datasets_len == 1:
+        plot_data = [[], datasets[0]['data']]
+        if args.time:
+            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+            plot_data[0] = [datetime.fromisoformat(t) for t in datasets[0]['timestamps']]
+            plt.xlabel('Time (HH:MM:SS)')
         else:
-            plt.plot(plot_data[0], plot_data[1], color='green')
+            for i in range(1, len(plot_data[1]) + 1):
+                plot_data[0].append(i)
 
-    plt.xlabel('Seconds since capture')
-    plt.ylabel('Power (W)')
-    plt.grid()
-    if datasets_len > 1:
-        plt.legend()
-
-    else:
         plt.title(
             f'Plug Power from {utils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
+        plt.plot(plot_data[0], plot_data[1], color='green')
 
+    else:
+        for dataset in datasets:
+            plot_data = [[i for i in range(1, len(dataset['data']) + 1)], dataset['data']]
+
+            if datasets_len > 1:
+                plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
+                plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
+
+        plt.xlabel('Seconds since capture')
+        plt.legend()
+
+    plt.ylabel('Power (W)')
+    plt.grid()
     plt.show()
