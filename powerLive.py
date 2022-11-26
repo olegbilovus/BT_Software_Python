@@ -209,15 +209,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Plug Power Live')
     parser.add_argument('--ip', type=ip_type, required=True, help='Plug IP. Default: PLUG_IP env var')
     parser.add_argument('-b', '--buffer_length', type=buffer_length_type, default=30,
-                        help='buffer length in seconds, must be a positive int value >= 2. Default: 30')
+                        help='Buffer length in seconds, must be a positive int value >= 2. Default: 30')
     parser.add_argument('--plug_type', choices=[1, 2], default=1, type=int,
                         help='1 for Shelly Plug S, 2 for Netio PowerCable REST 101x. Default: 1')
-    parser.add_argument('--hr', action='store_true', help='horizontal layout. Default: vertical')
+    parser.add_argument('--hr', action='store_true', help='Horizontal layout. Default: vertical')
     parser.add_argument('--db', required=True, help='SQLite DB file name. Default: DB_NAME env var')
-    parser.add_argument('--db_reset', action='store_true', help='delete all rows from DB table')
-    parser.add_argument('--no_graph', action='store_true', help='do not show graph')
+    parser.add_argument('--db_reset', action='store_true', help='Delete all rows from DB table')
+    parser.add_argument('--no_graph', action='store_true', help='Do not show graph')
     parser.add_argument('-v', '--verbose', action='store_true',
-                        help='verbose mode, print data to console')
+                        help='Verbose mode, print data to console')
     args = parser.parse_args()
 
     if args.plug_type == 2:
