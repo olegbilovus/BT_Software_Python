@@ -57,7 +57,14 @@ for db_name in args.db:
     else:
         cur.execute(SQL_BASE + ORDER_BY)
 
-    datasets.append({'data': cur.fetchall(), 'label': utils.file_name(db_name)})
+    data = cur.fetchall()
+    if data:
+        datasets.append({
+            'label': utils.file_name(db_name),
+            'data': data
+        })
+    else:
+        print(f'No data found in {db_name}')
     conn.close()
 
 datasets_len = len(datasets)
