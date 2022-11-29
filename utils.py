@@ -21,4 +21,4 @@ def data_start_from_midnight(data):
 
 
 def set_same_date(timestamp):
-    return datetime.fromisoformat(timestamp).replace(year=2000, month=1, day=1).isoformat()
+    return datetime.fromisoformat(timestamp).replace(year=2000, month=1, day=1, microsecond=0).isoformat()
