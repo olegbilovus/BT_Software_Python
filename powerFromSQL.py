@@ -20,7 +20,9 @@ parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
 parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib')
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
-parser.add_argument('--time', action='store_true', help='Show time on x axis')
+time_grp = parser.add_mutually_exclusive_group()
+time_grp.add_argument('--time', action='store_true', help='Show time on x axis')
+time_grp.add_argument('--h24', action='store_true', help='Compare dbs in 24h period starting from midnight')
 args = parser.parse_args()
 
 if args.db_dir:
@@ -29,8 +31,13 @@ if args.db_dir:
             if file.endswith('.db'):
                 args.db.append(os.path.join(dir_name, file))
 
-if len(args.db) > 1 and args.time:
-    raise argparse.ArgumentTypeError('Cannot use --time with more than one DB file')
+len_dbs = len(args.db)
+
+if len_dbs > 1 and args.time:
+    raise argparse.ArgumentTypeError('Cannot use --time with more than one DB file, use --h24 instead')
+
+if args.h24 and len_dbs < 2:
+    raise argparse.ArgumentTypeError('Cannot use --h24 with less than two DB files')
 
 for db_name in args.db:
     if not os.path.isfile(db_name):
@@ -61,7 +68,7 @@ for db_name in args.db:
     if data:
         datasets.append({
             'label': utils.file_name(db_name),
-            'data': data
+            'data': data if not args.h24 else utils.data_start_from_midnight(data)
         })
     else:
         print(f'No data found in {db_name}')
@@ -74,11 +81,11 @@ for dataset in datasets:
     dataset['first_timestamp'] = dataset['data'][0][0]
     dataset['last_timestamp'] = dataset['data'][-1][0]
 
-    if args.time:
+    if args.time or args.h24:
         dataset['timestamps'] = []
 
     for i in range(len(dataset['data'])):
-        if args.time:
+        if args.time or args.h24:
             dataset['timestamps'].append(dataset['data'][i][0])
 
         dataset['data'][i] = dataset['data'][i][1]
@@ -116,12 +123,22 @@ if args.matplotlib:
         plt.plot(plot_data[0], plot_data[1], color='green')
 
     else:
+
         for dataset in datasets:
-            plot_data = [[i for i in range(1, len(dataset['data']) + 1)], dataset['data']]
+            plot_data = [[], dataset['data']]
+            if args.h24:
+                plot_data[0] = [datetime.fromisoformat(utils.set_same_date(t)) for t in dataset['timestamps']]
+            else:
+                plot_data[0] = [i for i in range(1, len(plot_data[1]) + 1)]
+
             plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
             plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
 
-        plt.xlabel('Seconds since capture')
+        if args.h24:
+            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+            plt.xlabel('Time (HH:MM:SS)')
+        else:
+            plt.xlabel('Seconds since capture')
         plt.legend()
 
     plt.ylabel('Power (W)')
