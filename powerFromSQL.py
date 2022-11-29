@@ -123,7 +123,6 @@ if args.matplotlib:
         plt.plot(plot_data[0], plot_data[1], color='green')
 
     else:
-
         for dataset in datasets:
             plot_data = [[], dataset['data']]
             if args.h24:
