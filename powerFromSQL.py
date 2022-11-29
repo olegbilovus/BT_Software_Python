@@ -128,11 +128,11 @@ if args.matplotlib:
             plot_data = [[], dataset['data']]
             if args.h24:
                 plot_data[0] = [datetime.fromisoformat(utils.set_same_date(t)) for t in dataset['timestamps']]
+                plt.plot(plot_data[0], plot_data[1], label=dataset['label'], alpha=0.6)
             else:
                 plot_data[0] = [i for i in range(1, len(plot_data[1]) + 1)]
-
-            plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
-            plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
+                plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
+                plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
 
         if args.h24:
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
