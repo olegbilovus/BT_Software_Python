@@ -80,6 +80,7 @@ for dataset in datasets:
     for i in range(len(dataset['data'])):
         if args.time:
             dataset['timestamps'].append(dataset['data'][i][0])
+
         dataset['data'][i] = dataset['data'][i][1]
 
 if args.chartjs:
@@ -108,8 +109,7 @@ if args.matplotlib:
             plot_data[0] = [datetime.fromisoformat(t) for t in datasets[0]['timestamps']]
             plt.xlabel('Time (HH:MM:SS)')
         else:
-            for i in range(1, len(plot_data[1]) + 1):
-                plot_data[0].append(i)
+            plot_data[0] = [i for i in range(1, max_number_of_rows + 1)]
 
         plt.title(
             f'Plug Power from {utils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
@@ -118,10 +118,8 @@ if args.matplotlib:
     else:
         for dataset in datasets:
             plot_data = [[i for i in range(1, len(dataset['data']) + 1)], dataset['data']]
-
-            if datasets_len > 1:
-                plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
-                plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
+            plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
+            plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
 
         plt.xlabel('Seconds since capture')
         plt.legend()
