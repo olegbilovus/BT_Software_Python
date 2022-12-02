@@ -28,7 +28,7 @@ args = parser.parse_args()
 if args.db_dir:
     for dir_name in args.db_dir:
         for file in os.listdir(dir_name):
-            if file.endswith('.db'):
+            if file.endswith('Power.db'):
                 args.db.append(os.path.join(dir_name, file))
 else:
     for db_name in args.db:
@@ -47,13 +47,12 @@ if not args.chartjs and not args.matplotlib:
     print('No chart library selected, using matplotlib')
     args.matplotlib = True
 
+SQL_BASE = 'SELECT timestamp, power FROM plug_load WHERE is_valid = 1'
+ORDER_BY = ' ORDER BY timestamp'
 datasets = []
-
 for db_name in args.db:
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    SQL_BASE = 'SELECT timestamp, power FROM plug_load WHERE is_valid = 1'
-    ORDER_BY = ' ORDER BY timestamp'
 
     if args.start and args.end:
         cur.execute(SQL_BASE + ' AND timestamp BETWEEN ? AND ?' + ORDER_BY, (args.start, args.end))
