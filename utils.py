@@ -1,22 +1,12 @@
-import dpkt
+import scapy.all as scapy
 
 
 def get_protocol_and_ports(transport):
-    if isinstance(transport, dpkt.tcp.TCP):
-        protocol = 'TCP'
-        sport = transport.sport
-        dport = transport.dport
-    elif isinstance(transport, dpkt.udp.UDP):
-        protocol = 'UDP'
-        sport = transport.sport
-        dport = transport.dport
-    elif isinstance(transport, dpkt.icmp.ICMP):
-        protocol = 'ICMP'
-        sport = None
-        dport = None
+    if transport.haslayer(scapy.TCP):
+        return 'TCP', transport.sport, transport.dport
+    elif transport.haslayer(scapy.UDP):
+        return 'UDP', transport.sport, transport.dport
+    elif transport.haslayer(scapy.ICMP):
+        return 'ICMP', None, None
     else:
-        protocol = 'Unknown'
-        sport = None
-        dport = None
-
-    return protocol, sport, dport
+        return 'Other', None, None
