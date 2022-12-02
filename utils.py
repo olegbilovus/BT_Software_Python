@@ -10,3 +10,12 @@ def get_protocol_and_ports(transport):
         return 'ICMP', None, None
     else:
         return 'Other', None, None
+
+
+def get_ip_layer(pkt):
+    if pkt.haslayer(scapy.IP):
+        return scapy.IP
+    elif pkt.haslayer(scapy.IPv6):
+        return scapy.IPv6
+    else:
+        return None

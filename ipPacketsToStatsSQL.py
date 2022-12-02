@@ -50,8 +50,9 @@ if not args.verbose:
 # Process the packets
 skipped = 0
 for i, pkt in iterator:
-    if pkt.haslayer(scapy.IP):
-        ip = pkt[scapy.IP]
+    ip_type = utils.get_ip_layer(pkt)
+    if ip_type:
+        ip = pkt[ip_type]
         transport = ip.payload
         protocol, sport, dport = utils.get_protocol_and_ports(transport)
         ts = datetime.utcfromtimestamp(float(pkt.time)).isoformat().replace('T', ' ')
