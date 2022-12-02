@@ -47,7 +47,8 @@ if not args.chartjs and not args.matplotlib:
     print('No chart library selected, using matplotlib')
     args.matplotlib = True
 
-SQL_BASE = 'SELECT timestamp, power FROM plug_load WHERE is_valid = 1'
+fields = ['timestamp', 'power']
+SQL_BASE = 'SELECT ' + ','.join(fields) + ' FROM plug_load WHERE is_valid = 1'
 ORDER_BY = ' ORDER BY timestamp'
 datasets = []
 for db_name in args.db:
@@ -127,7 +128,7 @@ if args.matplotlib:
                 plot_data[0] = [datetime.fromisoformat(utils.set_same_date(t)) for t in dataset['timestamps']]
                 plt.plot(plot_data[0], plot_data[1], label=dataset['label'], alpha=0.6)
             else:
-                plot_data[0] = [i for i in range(1, len(plot_data[1]) + 1)]
+                plot_data[0] = range(1, len(plot_data[1]) + 1)
                 plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
                 plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
 
