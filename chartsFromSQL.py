@@ -23,7 +23,7 @@ parser.add_argument('--bytes', help='Show bytes sum on y axis', action='store_tr
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--line_style', help='Choose a custom line style', default='-')
-parser.add_argument('--no_fill', help='Fill the area under the line', action='store_true')
+parser.add_argument('--no_fill', help='Do not fill the area under the line', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
 args = parser.parse_args()
 
