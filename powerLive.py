@@ -191,10 +191,10 @@ if __name__ == '__main__':
 
 
     parser = argparse.ArgumentParser('Plug Power Live')
-    parser.add_argument('--ip', type=ip_type, required=True, help='Plug IP. Default: PLUG_IP env var')
+    parser.add_argument('--ip', type=ip_type, required=True, help='Plug IP')
     parser.add_argument('--plug_type', choices=[1, 2], default=1, type=int,
                         help='1 for Shelly Plug S, 2 for Netio PowerCable REST 101x. Default: 1')
-    parser.add_argument('--db', required=True, help='SQLite DB file name. Default: DB_NAME env var')
+    parser.add_argument('--db', required=True, help='SQLite DB file name')
     parser.add_argument('--db_reset', action='store_true', help='Delete all rows from DB table')
     parser.add_argument('--no_graph', action='store_true', help='Do not show graph')
     parser.add_argument('--threads', type=int, default=3, help='Number of threads to use. Default: 3')

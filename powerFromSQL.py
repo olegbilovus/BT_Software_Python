@@ -13,7 +13,7 @@ from jinja2 import Template, Environment, FileSystemLoader
 parser = argparse.ArgumentParser(description='Plot power data from SQL')
 db_grp = parser.add_mutually_exclusive_group(required=True)
 db_grp.add_argument('--db', type=str, nargs='+', default=[],
-                    help='SQLite DB file name. Default: DB_NAME env var ')
+                    help='SQLite DB file name ')
 db_grp.add_argument('--db_dir', type=str, nargs='+', default=[],
                     help='Paths to directories where to search for DB files')
 parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
