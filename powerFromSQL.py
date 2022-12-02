@@ -65,29 +65,28 @@ for db_name in args.db:
 
     data = cur.fetchall()
     if data:
-        datasets.append({
+        dataset = {
             'label': utils.file_name(db_name),
-            'data': data if not args.h24 else utils.data_start_from_midnight(data)
-        })
+            'data': data if not args.h24 else utils.data_start_from_midnight(data),
+            'first_timestamp': data[0][0],
+            'last_timestamp': data[-1][0]
+        }
+
+        if args.time or args.h24:
+            dataset['timestamps'] = []
+        for i in range(len(dataset['data'])):
+            if args.time or args.h24:
+                dataset['timestamps'].append(dataset['data'][i][0])
+
+            dataset['data'][i] = dataset['data'][i][1]
+
+        datasets.append(dataset)
     else:
         print(f'No data found in {db_name}')
     conn.close()
 
 datasets_len = len(datasets)
 max_number_of_rows = max([len(dataset['data']) for dataset in datasets])
-
-for dataset in datasets:
-    dataset['first_timestamp'] = dataset['data'][0][0]
-    dataset['last_timestamp'] = dataset['data'][-1][0]
-
-    if args.time or args.h24:
-        dataset['timestamps'] = []
-
-    for i in range(len(dataset['data'])):
-        if args.time or args.h24:
-            dataset['timestamps'].append(dataset['data'][i][0])
-
-        dataset['data'][i] = dataset['data'][i][1]
 
 if args.chartjs:
     env = Environment(loader=FileSystemLoader('.'))
