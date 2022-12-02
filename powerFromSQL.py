@@ -15,7 +15,7 @@ db_grp = parser.add_mutually_exclusive_group(required=True)
 db_grp.add_argument('--db', type=str, nargs='+', default=[],
                     help='SQLite DB file name ')
 db_grp.add_argument('--db_dir', type=str, nargs='+', default=[],
-                    help='Paths to directories where to search for DB files')
+                    help='Paths to directory where to search for DB files')
 parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
 parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib')
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
@@ -30,6 +30,10 @@ if args.db_dir:
         for file in os.listdir(dir_name):
             if file.endswith('.db'):
                 args.db.append(os.path.join(dir_name, file))
+else:
+    for db_name in args.db:
+        if not os.path.isfile(db_name):
+            exit(f'File {db_name} not found')
 
 len_dbs = len(args.db)
 
@@ -38,10 +42,6 @@ if len_dbs > 1 and args.time:
 
 if args.h24 and len_dbs < 2:
     raise argparse.ArgumentTypeError('Cannot use --h24 with less than two DB files')
-
-for db_name in args.db:
-    if not os.path.isfile(db_name):
-        exit(f'File {db_name} not found')
 
 if not args.chartjs and not args.matplotlib:
     print('No chart library selected, using matplotlib')
