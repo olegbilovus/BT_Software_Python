@@ -90,6 +90,12 @@ class PowerLive:
         self.db_name = db_name
         self.conn = sqlite3.connect(db_name, check_same_thread=False)
         self.cur = self.conn.cursor()
+
+        if db_reset:
+            self.cur.execute('DROP TABLE IF EXISTS plug_load')
+            self.conn.commit()
+            print('Deleted all rows from table')
+
         try:
             self.cur.execute(
                 'CREATE TABLE plug_load (timestamp TIMESTAMP PRIMARY KEY, power REAL, is_valid BOOLEAN)')
@@ -99,10 +105,6 @@ class PowerLive:
             pass
         self._sql_query = 'INSERT INTO plug_load VALUES (?, ?, ?)'
 
-        if db_reset:
-            self.cur.execute('DELETE FROM plug_load')
-            self.conn.commit()
-            print('Deleted all rows from table')
         self.cur.execute(self._sql_query, (datetime.utcnow(), 0, 0))
         print(f'Data will be saved to {db_name}')
 
