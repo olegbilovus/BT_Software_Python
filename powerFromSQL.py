@@ -10,14 +10,17 @@ import matplotlib.pyplot as plt
 import utils
 from jinja2 import Template, Environment, FileSystemLoader
 
+file_end = 'Power.db'
 parser = argparse.ArgumentParser(description='Plot power data from SQL')
 db_grp = parser.add_mutually_exclusive_group(required=True)
 db_grp.add_argument('--db', type=str, nargs='+', default=[],
                     help='SQLite DB file name ')
 db_grp.add_argument('--db_dir', type=str, nargs='+', default=[],
-                    help='Paths to directory where to search for DB files')
+                    help=f'Paths to directory where to search for DB files. File\'s name have to end with "{file_end}"')
 parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
 parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib')
+parser.add_argument('--line_style', type=str, default='-', help='Choose a custom line style')
+parser.add_argument('--no_fill', action='store_true', help='Do not fill the area under the line')
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
 time_grp = parser.add_mutually_exclusive_group()
@@ -28,7 +31,7 @@ args = parser.parse_args()
 if args.db_dir:
     for dir_name in args.db_dir:
         for file in os.listdir(dir_name):
-            if file.endswith('Power.db'):
+            if file.endswith(file_end):
                 args.db.append(os.path.join(dir_name, file))
 else:
     for db_name in args.db:
@@ -102,35 +105,38 @@ if args.chartjs:
                 'fill': True if datasets_len > 1 else False,
             })
 
-        f.write(template.render(labels=[i for i in range(1, max_number_of_rows + 1)],
+        f.write(template.render(labels=range(1, max_number_of_rows + 1),
                                 datasets=json.dumps(chart_datasets)))
 
     webbrowser.open('file://' + os.path.realpath('chartjs.html'))
 
 if args.matplotlib:
     if datasets_len == 1:
-        plot_data = [[], datasets[0]['data']]
+        plot_data = [None, datasets[0]['data']]
         if args.time:
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
             plot_data[0] = [datetime.fromisoformat(t) for t in datasets[0]['timestamps']]
             plt.xlabel('Time (HH:MM:SS)')
         else:
-            plot_data[0] = [i for i in range(1, max_number_of_rows + 1)]
+            plot_data[0] = range(1, max_number_of_rows + 1)
 
         plt.title(
             f'Plug Power from {utils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
-        plt.plot(plot_data[0], plot_data[1], color='green')
+        plt.plot(*plot_data, args.line_style)
+        if not args.no_fill:
+            plt.fill_between(*plot_data, alpha=0.3)
 
     else:
         for dataset in datasets:
-            plot_data = [[], dataset['data']]
+            plot_data = [None, dataset['data']]
             if args.h24:
                 plot_data[0] = [datetime.fromisoformat(utils.set_same_date(t)) for t in dataset['timestamps']]
-                plt.plot(plot_data[0], plot_data[1], label=dataset['label'], alpha=0.6)
+                plt.plot(*plot_data, label=dataset['label'], alpha=0.6)
             else:
                 plot_data[0] = range(1, len(plot_data[1]) + 1)
-                plt.plot(plot_data[0], plot_data[1], label=dataset['label'])
-                plt.fill_between(plot_data[0], plot_data[1], alpha=0.3)
+                plt.plot(*plot_data, args.line_style, label=dataset['label'])
+                if not args.no_fill:
+                    plt.fill_between(*plot_data, alpha=0.3)
 
         if args.h24:
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
