@@ -9,17 +9,21 @@ import pandas as pd
 
 import utils
 
+file_end = 'IP_Packets.db'
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Plot the stats from a SQL file generated with ipPacketsToStatsSQL.')
 db_grp = parser.add_mutually_exclusive_group(required=True)
 db_grp.add_argument('--db', help='sqlite3 database to read from', nargs='+', default=[])
-db_grp.add_argument('--db_dir', help='Paths to directorie where to search for DB files', nargs='+', default=[])
-parser.add_argument('--grp_freq', help='Grouping frequency', default='1s')
+db_grp.add_argument('--db_dir',
+                    help=f'Paths to directory where to search for DB files. File\'s name have to end with "{file_end}"',
+                    nargs='+', default=[])
+parser.add_argument('--grp_freq', help='Grouping frequency. Default "1s"', default='1s')
 parser.add_argument('--time', help='Show time on x axis', action='store_true')
 parser.add_argument('--bytes', help='Show bytes sum on y axis', action='store_true')
 parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
 parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
-parser.add_argument('--line_style', help='Show dots instead of lines', default='-')
+parser.add_argument('--line_style', help='Choose a custom line style', default='-')
+parser.add_argument('--no_fill', help='Fill the area under the line', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
 args = parser.parse_args()
 
@@ -27,7 +31,7 @@ args = parser.parse_args()
 if args.db_dir:
     for dir_name in args.db_dir:
         for file in os.listdir(dir_name):
-            if file.endswith('IP_Packets.db'):
+            if file.endswith(file_end):
                 args.db.append(os.path.join(dir_name, file))
 else:
     for db_name in args.db:
@@ -96,12 +100,15 @@ if datasets_len == 1:
     plt.title(
         f'{datasets[0]["label"]} - {datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])} (UCT)')
     plt.plot(*plot_data, args.line_style)
+    if not args.no_fill:
+        plt.fill_between(*plot_data, alpha=0.3)
 else:
     for dataset in datasets:
         plot_data = [None, dataset['df'][fields[1]]]
         plot_data[0] = range(1, len(plot_data[1]) + 1)
-        plt.plot(*plot_data, label=dataset['label'], linestyle=args.line_style)
-        plt.fill_between(*plot_data, alpha=0.3)
+        plt.plot(*plot_data, args.line_style, label=dataset['label'])
+        if not args.no_fill:
+            plt.fill_between(*plot_data, alpha=0.3)
     plt.xlabel(f'Time ({args.grp_freq})')
     plt.legend()
 
