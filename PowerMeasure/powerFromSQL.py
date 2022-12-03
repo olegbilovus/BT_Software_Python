@@ -10,38 +10,30 @@ import sqlite3
 import webbrowser
 from datetime import datetime
 
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-from Utility import sharedUtils
 from jinja2 import Environment, FileSystemLoader
+
+from Utility import sharedUtils
 
 file_end = 'Power.db'
 parser = argparse.ArgumentParser(description='Plot power data from SQL')
-db_grp = parser.add_mutually_exclusive_group(required=True)
-db_grp.add_argument('--db', type=str, nargs='+', default=[],
-                    help='SQLite DB file name ')
-db_grp.add_argument('--db_dir', type=str, nargs='+', default=[],
-                    help=f'Paths to directory where to search for DB files. File\'s name have to end with "{file_end}"')
+sharedUtils.parser_add_db_dir_args(parser, file_end)
+sharedUtils.parser_add_sql_args(parser)
+sharedUtils.parser_add_matplotlib_args(parser, default_color='green')
 parser.add_argument('--chartjs', action='store_true', help='Use charts.js')
-parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib')
-parser.add_argument('--line_style', type=str, default='-', help='Choose a custom line style')
-parser.add_argument('--no_fill', action='store_true', help='Do not fill the area under the line')
-parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
-parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
 time_grp = parser.add_mutually_exclusive_group()
 time_grp.add_argument('--time', action='store_true', help='Show time on x axis')
 time_grp.add_argument('--h24', action='store_true', help='Compare dbs in 24h period starting from midnight')
 args = parser.parse_args()
 
+# Get the DB files
 if args.db_dir:
-    for dir_name in args.db_dir:
-        for file in os.listdir(dir_name):
-            if file.endswith(file_end):
-                args.db.append(os.path.join(dir_name, file))
+    args.db = sharedUtils.get_db_paths_from_dirs(args.db_dir, file_end)
 else:
-    for db_name in args.db:
-        if not os.path.isfile(db_name):
-            exit(f'File {db_name} not found')
+    sharedUtils.check_db_files_exist(args.db)
 
 len_dbs = len(args.db)
 
@@ -57,7 +49,8 @@ if not args.chartjs and not args.matplotlib:
 
 fields = ['timestamp', 'power']
 SQL_BASE = 'SELECT ' + ','.join(fields) + ' FROM plug_load WHERE is_valid = 1'
-ORDER_BY = ' ORDER BY timestamp'
+ORDER_BY = ' ORDER BY ' + fields[0]
+
 datasets = []
 for db_name in args.db:
     conn = sqlite3.connect(db_name)
@@ -127,9 +120,9 @@ if args.matplotlib:
 
         plt.title(
             f'Plug Power from {sharedUtils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
-        plt.plot(*plot_data, args.line_style)
+        plt.plot(*plot_data, color=args.color, linestyle=args.line_style)
         if not args.no_fill:
-            plt.fill_between(*plot_data, alpha=0.3)
+            plt.fill_between(*plot_data, alpha=0.3, color=args.color)
 
     else:
         for dataset in datasets:

@@ -8,40 +8,31 @@ import argparse
 import sqlite3
 from datetime import datetime
 
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from Utility import sharedUtils
 
-file_end = 'IP_Packets.db'
 # Parse command line arguments
+file_end = 'IP_Packets.db'
 parser = argparse.ArgumentParser(description='Plot the stats from a SQL file generated with ipPacketsToStatsSQL.')
-db_grp = parser.add_mutually_exclusive_group(required=True)
-db_grp.add_argument('--db', help='sqlite3 database to read from', nargs='+', default=[])
-db_grp.add_argument('--db_dir',
-                    help=f'Paths to directory where to search for DB files. File\'s name have to end with "{file_end}"',
-                    nargs='+', default=[])
+sharedUtils.parser_add_db_dir_args(parser, file_end)
+sharedUtils.parser_add_sql_args(parser)
+sharedUtils.parser_add_matplotlib_args(parser)
 parser.add_argument('--grp_freq', help='Grouping frequency. Default "1s"', default='1s')
 parser.add_argument('--time', help='Show time on x axis', action='store_true')
 parser.add_argument('--bytes', help='Show bytes sum on y axis', action='store_true')
-parser.add_argument('--start', type=str, help='Start date, format: YYYY-MM-DD HH:MM:SS')
-parser.add_argument('--end', type=str, help='End date, format: YYYY-MM-DD HH:MM:SS')
-parser.add_argument('--line_style', help='Choose a custom line style', default='-')
-parser.add_argument('--no_fill', help='Do not fill the area under the line', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
 args = parser.parse_args()
 
 # Get the DB files
 if args.db_dir:
-    for dir_name in args.db_dir:
-        for file in os.listdir(dir_name):
-            if file.endswith(file_end):
-                args.db.append(os.path.join(dir_name, file))
+    args.db = sharedUtils.get_db_paths_from_dirs(args.db_dir, file_end)
 else:
-    for db_name in args.db:
-        if not os.path.isfile(db_name):
-            exit(f'File {db_name} not found')
+    sharedUtils.check_db_files_exist(args.db)
 
 len_dbs = len(args.db)
 
@@ -92,6 +83,7 @@ for db_name in args.db:
 datasets_len = len(datasets)
 
 # Plot the datasets
+plt.tight_layout()
 if datasets_len == 1:
     plot_data = [None, datasets[0]['df'][fields[1]]]
     if args.time:
@@ -104,9 +96,9 @@ if datasets_len == 1:
 
     plt.title(
         f'{datasets[0]["label"]} - {datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])} (UCT)')
-    plt.plot(*plot_data, args.line_style)
+    plt.plot(*plot_data, color=args.color, linestyle=args.line_style)
     if not args.no_fill:
-        plt.fill_between(*plot_data, alpha=0.3)
+        plt.fill_between(*plot_data, alpha=0.3, color=args.color)
 else:
     for dataset in datasets:
         plot_data = [None, dataset['df'][fields[1]]]
@@ -123,4 +115,7 @@ if args.bytes:
 else:
     plt.ylabel(f'Packets/{args.grp_freq}')
 plt.grid()
+plt.tight_layout()
+manager = plt.get_current_fig_manager()
+manager.window.showMaximized()
 plt.show()

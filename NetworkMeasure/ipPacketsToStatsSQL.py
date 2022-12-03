@@ -12,13 +12,13 @@ import scapy.all as scapy
 from tqdm import tqdm
 
 import utils
+from Utility import sharedUtils
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(
     description='Convert pcap file to SQL stats, it considers only IP packets. ARP and some other packets are ignored.')
+sharedUtils.parser_add_db_args(parser)
 parser.add_argument('--pcap', help='pcap file')
-parser.add_argument('--db', help='sqlite3 database to write to', required=True)
-parser.add_argument('--db_reset', help='reset the database', action='store_true')
 print_args = parser.add_mutually_exclusive_group()
 print_args.add_argument('--n_packets', help='number of packets to process, used for the progress bar', type=int)
 print_args.add_argument('-v', '--verbose', action='store_true', help='verbose output')
