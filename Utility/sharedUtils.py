@@ -1,12 +1,10 @@
+import argparse
 import ntpath
 import os
 import sqlite3
 from datetime import datetime
 
 import pandas as pd
-import argparse
-
-SAME_DATE = '2020-01-01'
 
 
 # Get the filename from a path
