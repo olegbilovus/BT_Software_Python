@@ -13,9 +13,14 @@ import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+import matplotlib
+
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import requests
 from matplotlib.animation import FuncAnimation
+
+from Utility import sharedUtils
 
 
 class Plug(ABC):
@@ -199,8 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--ip', type=ip_type, required=True, help='Plug IP')
     parser.add_argument('--plug_type', choices=[1, 2], default=1, type=int,
                         help='1 for Shelly Plug S, 2 for Netio PowerCable REST 101x. Default: 1')
-    parser.add_argument('--db', required=True, help='SQLite DB file name')
-    parser.add_argument('--db_reset', action='store_true', help='Delete all rows from DB table')
+    sharedUtils.parser_add_db_args(parser)
     parser.add_argument('--no_graph', action='store_true', help='Do not show graph')
     parser.add_argument('--threads', type=int, default=3, help='Number of threads to use. Default: 3')
     parser.add_argument('--captures_limit', type=int, help='Number of captures to make before exiting')
