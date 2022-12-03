@@ -1,6 +1,9 @@
 import ntpath
 import os
+import sqlite3
 from datetime import datetime
+
+import pandas as pd
 
 
 # Get the filename from a path
@@ -12,10 +15,13 @@ def file_name(file_path):
 # Move data in a dataset to start from midnight
 def data_start_from_midnight(data):
     i = 0
-    while i < len(data):
-        if datetime.fromisoformat(data[i][0]).hour == 0:
-            break
-        i += 1
+    flag = True
+    for j in range(len(data)):
+        if datetime.fromisoformat(data[j][0]).hour != 0 and not flag:
+            i += 1
+        else:
+            flag = False
+        data[j] = (set_same_date(data[j][0]), data[j][1])
 
     _data = data[i:]
     _data.extend(data[:i])
@@ -24,8 +30,8 @@ def data_start_from_midnight(data):
 
 
 # Set same date for a data
-def set_same_date(timestamp):
-    return datetime.fromisoformat(timestamp).replace(year=2000, month=1, day=1, microsecond=0).isoformat()
+def set_same_date(timestamp, year=2020, month=1, day=1):
+    return datetime.fromisoformat(timestamp).replace(year, month, day).isoformat()
 
 
 # Add basic arguments to manage the db to a parser
@@ -50,7 +56,6 @@ def parser_add_sql_args(parser):
 
 # Add basic arguments to manage matplotlib to a parser
 def parser_add_matplotlib_args(parser, default_line_style='-', default_color=None):
-    parser.add_argument('--matplotlib', action='store_true', help='Use matplotlib to plot the chart')
     parser.add_argument('--no_fill', help='Do not fill the area under the line', action='store_true')
     parser.add_argument('--line_style', help='Choose a custom line style', default=default_line_style)
     parser.add_argument('--color', help='Choose a custom color', default=default_color)
@@ -88,3 +93,19 @@ def choose_sql_query(start, end, fields, table, where_data=None):
         return f'{sql_base} WHERE {where_data} AND {fields[0]} <= ? {order_by}', (end,)
     else:
         return f'{sql_base} WHERE {where_data} {order_by}', ()
+
+
+# Get data from a db
+def get_data_from_db(db_path, start, end, fields, table, where_data=None):
+    with sqlite3.connect(db_path) as conn:
+        sql_query, sql_args = choose_sql_query(start, end, fields, table, where_data)
+        return conn.execute(sql_query, sql_args).fetchall()
+
+
+# Get data frame from data
+def get_data_frame_from_data(data, fields, grp_freq='1s'):
+    df = pd.DataFrame(data, columns=fields)
+    df[fields[0]] = pd.to_datetime(df[fields[0]])
+    df = df.groupby(pd.Grouper(key=fields[0], freq=grp_freq))
+
+    return df

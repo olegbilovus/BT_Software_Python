@@ -5,14 +5,13 @@ _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(_path_parent)
 
 import argparse
-import sqlite3
 from datetime import datetime
 
 import matplotlib
+
 matplotlib.use('Qt5Agg')
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import pandas as pd
 
 from Utility import sharedUtils
 
@@ -23,7 +22,9 @@ sharedUtils.parser_add_db_dir_args(parser, file_end)
 sharedUtils.parser_add_sql_args(parser)
 sharedUtils.parser_add_matplotlib_args(parser)
 parser.add_argument('--grp_freq', help='Grouping frequency. Default "1s"', default='1s')
-parser.add_argument('--time', help='Show time on x axis', action='store_true')
+time_grp = parser.add_mutually_exclusive_group()
+time_grp.add_argument('--time', help='Show time on x axis', action='store_true')
+time_grp.add_argument('--h24', action='store_true', help='Compare dbs in 24h period starting from midnight')
 parser.add_argument('--bytes', help='Show bytes sum on y axis', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
 args = parser.parse_args()
@@ -42,16 +43,12 @@ if len_dbs > 1 and args.time:
 # Create the datasets
 fields = ['timestamp', 'length']
 datasets = []
-for db_name in args.db:
-    conn = sqlite3.connect(db_name)
-    cur = conn.cursor()
-    cur.execute(*sharedUtils.choose_sql_query(args.start, args.end, fields, 'pcap_stats'))
+for db_path in args.db:
 
-    data = cur.fetchall()
+    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'pcap_stats')
     if data:
-        df = pd.DataFrame(data, columns=fields)
-        df[fields[0]] = pd.to_datetime(df[fields[0]])
-        df = df.groupby(pd.Grouper(key=fields[0], freq=args.grp_freq))
+        data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)
+        df = sharedUtils.get_data_frame_from_data(data, fields, grp_freq=args.grp_freq)
 
         if args.bytes:
             df = df.sum()
@@ -60,15 +57,13 @@ for db_name in args.db:
         df = df.reset_index()
 
         datasets.append({
-            'label': sharedUtils.file_name(db_name),
+            'label': sharedUtils.file_name(db_path),
             'df': df,
             'first_timestamp': data[0][0],
             'last_timestamp': data[-1][0]
         })
     else:
-        print(f'No data found in {db_name}')
-
-    conn.close()
+        print(f'No data found in {db_path}')
 
 datasets_len = len(datasets)
 
