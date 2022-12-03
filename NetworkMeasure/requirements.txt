@@ -1,0 +1,4 @@
+matplotlib
+scapy
+pandas
+tqdm
