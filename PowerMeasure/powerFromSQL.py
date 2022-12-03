@@ -48,22 +48,12 @@ if not args.chartjs and not args.matplotlib:
     args.matplotlib = True
 
 fields = ['timestamp', 'power']
-SQL_BASE = 'SELECT ' + ','.join(fields) + ' FROM plug_load WHERE is_valid = 1'
-ORDER_BY = ' ORDER BY ' + fields[0]
-
+WHERE_DATA = 'is_valid = 1'
 datasets = []
 for db_name in args.db:
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-
-    if args.start and args.end:
-        cur.execute(SQL_BASE + ' AND timestamp BETWEEN ? AND ?' + ORDER_BY, (args.start, args.end))
-    elif args.start:
-        cur.execute(SQL_BASE + ' AND timestamp >= ?' + ORDER_BY, (args.start,))
-    elif args.end:
-        cur.execute(SQL_BASE + ' AND timestamp <= ?' + ORDER_BY, (args.end,))
-    else:
-        cur.execute(SQL_BASE + ORDER_BY)
+    cur.execute(*sharedUtils.choose_sql_query(args.start, args.end, fields, 'plug_load', WHERE_DATA))
 
     data = cur.fetchall()
     if data:

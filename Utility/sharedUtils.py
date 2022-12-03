@@ -1,6 +1,6 @@
 import ntpath
-from datetime import datetime
 import os
+from datetime import datetime
 
 
 # Get the filename from a path
@@ -72,3 +72,19 @@ def check_db_files_exist(db_paths):
     for db_path in db_paths:
         if not os.path.isfile(db_path):
             raise FileNotFoundError(f'DB file {db_path} does not exist')
+
+
+# Choose the right SQL query to execute
+# "where data" should be a string with the SQL data of conditions
+def choose_sql_query(start, end, fields, table, where_data=None):
+    sql_base = f'SELECT {",".join(fields)} FROM {table}'
+    order_by = f'ORDER BY {fields[0]}'
+    where_data = 'true' if not where_data else f' {where_data}'
+    if start and end:
+        return f'{sql_base} WHERE {where_data} AND {fields[0]} BETWEEN ? AND ? {order_by}', (start, end)
+    elif start:
+        return f'{sql_base} WHERE {where_data} AND {fields[0]} >= ? {order_by}', (start,)
+    elif end:
+        return f'{sql_base} WHERE {where_data} AND {fields[0]} <= ? {order_by}', (end,)
+    else:
+        return f'{sql_base} WHERE {where_data} {order_by}', ()
