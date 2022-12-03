@@ -4,13 +4,13 @@ import sqlite3
 from datetime import datetime
 
 import pandas as pd
-import re
+import argparse
 
 SAME_DATE = '2020-01-01'
 
 
 # Get the filename from a path
-def file_name(file_path):
+def get_file_name_from_path(file_path):
     head, tail = ntpath.split(file_path)
     return tail or ntpath.basename(head)
 
@@ -71,6 +71,30 @@ def parser_add_matplotlib_args(parser, default_line_style='-', default_color=Non
     parser.add_argument('--no_grid', help='Do not show the grid', action='store_true')
 
 
+# Add basic arguments to manage time and h24
+def parser_add_time_args(parser):
+    time_grp = parser.add_mutually_exclusive_group()
+    time_grp.add_argument('--time', action='store_true', help='Show time on x axis')
+    time_grp.add_argument('--h24', action='store_true', help='Compare dbs in 24h period starting from midnight')
+
+
+# Get basic default parser
+def get_basic_parser(desc, file_end, default_color=None):
+    parser = argparse.ArgumentParser(description=desc)
+    parser_add_db_dir_args(parser, file_end)
+    parser_add_sql_args(parser)
+    parser_add_matplotlib_args(parser, default_color=default_color)
+    parser_add_time_args(parser)
+    parser_add_pandas_args(parser)
+
+    return parser
+
+
+# Add basic arguments to manage the pandas
+def parser_add_pandas_args(parser):
+    parser.add_argument('--grp_freq', help='Frequency to group data', default='1s')
+
+
 # Get db paths for directories
 def get_db_paths_from_dirs(db_dirs, file_end):
     db_paths = []
@@ -87,6 +111,16 @@ def check_db_files_exist(db_paths):
     for db_path in db_paths:
         if not os.path.isfile(db_path):
             raise FileNotFoundError(f'DB file {db_path} does not exist')
+
+
+# Validate args
+def validate_args(args):
+    len_dbs = len(args.db)
+    if len_dbs > 1 and args.time:
+        raise argparse.ArgumentTypeError('Cannot use --time with more than one DB file, use --h24 instead')
+
+    if args.h24 and len_dbs < 2:
+        raise argparse.ArgumentTypeError('Cannot use --h24 with less than two DB files')
 
 
 # Choose the right SQL query to execute
@@ -147,7 +181,7 @@ def plot_data_from_dataset(dataset, fields, ax, time=False, no_fill=False, line_
 
 
 # Set options for fig, ax and plt
-def set_fig_ax(fig, ax, title, x_label, y_label, legend=False, no_grid=False, maximize=False, plt=None):
+def set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend=False, no_grid=False, maximize=False, plt=None):
     fig.tight_layout()
     ax.set_title(title)
     ax.set_xlabel(x_label)
@@ -159,6 +193,7 @@ def set_fig_ax(fig, ax, title, x_label, y_label, legend=False, no_grid=False, ma
     if maximize and plt:
         fig_manager = plt.get_current_fig_manager()
         fig_manager.window.showMaximized()
+        fig_manager.set_window_title(w_title)
 
 
 # Create title for one db plot
@@ -167,8 +202,8 @@ def get_plot_title_one_db_from_dataset(dataset):
 
 
 # Plot data from datasets
-def plot_data_from_datasets(plt, datasets, fields, y_label, no_fill=False, line_style='-', color=None, marker=None,
-                            no_grid=False, time=False, h24=False, date_format=None, grp_freq='1s'):
+def plot_data_from_datasets(plt, w_title, datasets, fields, y_label, no_fill=False, line_style='-', color=None,
+                            marker=None, no_grid=False, time=False, h24=False, date_format=None, grp_freq='1s'):
     datasets_len = len(datasets)
 
     # Plot the datasets
@@ -191,4 +226,4 @@ def plot_data_from_datasets(plt, datasets, fields, y_label, no_fill=False, line_
         x_label = 'Time (HH:MM:SS)'
     else:
         x_label = f'Scale time (1:{grp_freq})'
-    set_fig_ax(fig, ax, title, x_label, y_label, legend, no_grid, True, plt)
+    set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend, no_grid, True, plt)
