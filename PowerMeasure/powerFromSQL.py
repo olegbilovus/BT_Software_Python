@@ -1,14 +1,19 @@
+import os
+import sys
+
+_path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(_path_parent)
+
 import argparse
 import json
-import os
 import sqlite3
 import webbrowser
 from datetime import datetime
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import utils
-from jinja2 import Template, Environment, FileSystemLoader
+from Utility import sharedUtils
+from jinja2 import Environment, FileSystemLoader
 
 file_end = 'Power.db'
 parser = argparse.ArgumentParser(description='Plot power data from SQL')
@@ -70,8 +75,8 @@ for db_name in args.db:
     data = cur.fetchall()
     if data:
         dataset = {
-            'label': utils.file_name(db_name),
-            'data': data if not args.h24 else utils.data_start_from_midnight(data),
+            'label': sharedUtils.file_name(db_name),
+            'data': data if not args.h24 else sharedUtils.data_start_from_midnight(data),
             'first_timestamp': data[0][0],
             'last_timestamp': data[-1][0]
         }
@@ -121,7 +126,7 @@ if args.matplotlib:
             plot_data[0] = range(1, max_number_of_rows + 1)
 
         plt.title(
-            f'Plug Power from {utils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
+            f'Plug Power from {sharedUtils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
         plt.plot(*plot_data, args.line_style)
         if not args.no_fill:
             plt.fill_between(*plot_data, alpha=0.3)
@@ -130,7 +135,7 @@ if args.matplotlib:
         for dataset in datasets:
             plot_data = [None, dataset['data']]
             if args.h24:
-                plot_data[0] = [datetime.fromisoformat(utils.set_same_date(t)) for t in dataset['timestamps']]
+                plot_data[0] = [datetime.fromisoformat(sharedUtils.set_same_date(t)) for t in dataset['timestamps']]
                 plt.plot(*plot_data, label=dataset['label'], alpha=0.6)
             else:
                 plot_data[0] = range(1, len(plot_data[1]) + 1)

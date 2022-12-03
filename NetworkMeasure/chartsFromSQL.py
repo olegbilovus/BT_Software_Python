@@ -1,5 +1,10 @@
-import argparse
 import os
+import sys
+
+_path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(_path_parent)
+
+import argparse
 import sqlite3
 from datetime import datetime
 
@@ -7,7 +12,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import utils
+from Utility import sharedUtils
 
 file_end = 'IP_Packets.db'
 # Parse command line arguments
@@ -74,7 +79,7 @@ for db_name in args.db:
         df = df.reset_index()
 
         datasets.append({
-            'label': utils.file_name(db_name),
+            'label': sharedUtils.file_name(db_name),
             'df': df,
             'first_timestamp': data[0][0],
             'last_timestamp': data[-1][0]
