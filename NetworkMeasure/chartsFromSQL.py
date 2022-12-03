@@ -5,7 +5,6 @@ _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(_path_parent)
 
 import argparse
-from datetime import datetime
 
 import matplotlib
 
@@ -44,8 +43,7 @@ if len_dbs > 1 and args.time:
 fields = ['timestamp', 'length']
 datasets = []
 for db_path in args.db:
-
-    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'pcap_stats')
+    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'pcap_stats', h24=args.h24)
     if data:
         data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)
         df = sharedUtils.get_data_frame_from_data(data, fields, grp_freq=args.grp_freq)
@@ -68,39 +66,28 @@ for db_path in args.db:
 datasets_len = len(datasets)
 
 # Plot the datasets
-plt.tight_layout()
+fig, ax = plt.subplots()
 if datasets_len == 1:
-    plot_data = [None, datasets[0]['df'][fields[1]]]
-    if args.time:
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-        plot_data[0] = datasets[0]['df'][fields[0]]
-        plt.xlabel('Time (HH:MM:SS)')
-    else:
-        plot_data[0] = range(1, len(plot_data[1]) + 1)
-        plt.xlabel(f'Time ({args.grp_freq})')
-
-    plt.title(
-        f'{datasets[0]["label"]} - {datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])} (UCT)')
-    plt.plot(*plot_data, color=args.color, linestyle=args.line_style)
-    if not args.no_fill:
-        plt.fill_between(*plot_data, alpha=0.3, color=args.color)
+    title = sharedUtils.get_plot_title_one_db_from_dataset(datasets[0])
+    legend = False
+    sharedUtils.plot_data_from_dataset(datasets[0], fields, ax, args.time, args.no_fill, args.line_style,
+                                       args.color, args.marker)
 else:
+    title = None
+    legend = True
     for dataset in datasets:
-        plot_data = [None, dataset['df'][fields[1]]]
-        plot_data[0] = range(1, len(plot_data[1]) + 1)
-        plt.plot(*plot_data, args.line_style, label=dataset['label'])
-        if not args.no_fill:
-            plt.fill_between(*plot_data, alpha=0.3)
-    plt.xlabel(f'Time ({args.grp_freq})')
-    plt.legend()
+        sharedUtils.plot_data_from_dataset(dataset, fields, ax, args.h24, args.no_fill, args.line_style,
+                                           marker=args.marker)
 
-# Plot the data
-if args.bytes:
-    plt.ylabel(f'Bytes/{args.grp_freq}')
+# Show the plot
+if args.time or args.h24:
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+    x_label = 'Time (HH:MM:SS)'
 else:
-    plt.ylabel(f'Packets/{args.grp_freq}')
-plt.grid()
-plt.tight_layout()
-manager = plt.get_current_fig_manager()
-manager.window.showMaximized()
+    x_label = f'Scale time (1:{args.grp_freq})'
+if args.bytes:
+    y_label = f'Bytes/{args.grp_freq}'
+else:
+    y_label = f'Packets/{args.grp_freq}'
+sharedUtils.set_fig_ax(fig, ax, title, x_label, y_label, legend, args.no_grid, True, plt)
 plt.show()

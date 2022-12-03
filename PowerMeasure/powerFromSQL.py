@@ -44,7 +44,7 @@ fields = ['timestamp', 'power']
 WHERE_DATA = 'is_valid = 1'
 datasets = []
 for db_path in args.db:
-    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'plug_load', WHERE_DATA)
+    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'plug_load', WHERE_DATA, h24=args.h24)
 
     if data:
         data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)
@@ -61,42 +61,12 @@ for db_path in args.db:
     else:
         print(f'No data found in {db_path}')
 
-datasets_len = len(datasets)
+# Plot the data
+y_label = f'Power (W) /{args.grp_freq}'
+sharedUtils.plot_data_from_datasets(plt, datasets, fields, y_label, no_fill=args.no_fill, line_style=args.line_style,
+                                    color=args.color, marker=args.marker,
+                                    no_grid=args.no_grid, time=args.time, h24=args.h24,
+                                    date_format=mdates.DateFormatter('%H:%M:%S'), grp_freq=args.grp_freq)
 
-if datasets_len == 1:
-    plot_data = [None, datasets[0]['data']]
-    if args.time:
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-        plot_data[0] = [datetime.fromisoformat(t) for t in datasets[0]['timestamps']]
-        plt.xlabel('Time (HH:MM:SS)')
-    else:
-        plot_data[0] = range(1, max_number_of_rows + 1)
-
-    plt.title(
-        f'Plug Power from {sharedUtils.file_name(args.db[0])} [{datetime.fromisoformat(datasets[0]["first_timestamp"])} - {datetime.fromisoformat(datasets[0]["last_timestamp"])}] (UTC)')
-    plt.plot(*plot_data, color=args.color, linestyle=args.line_style)
-    if not args.no_fill:
-        plt.fill_between(*plot_data, alpha=0.3, color=args.color)
-
-else:
-    for dataset in datasets:
-        plot_data = [None, dataset['data']]
-        if args.h24:
-            plot_data[0] = [datetime.fromisoformat(sharedUtils.set_same_date(t)) for t in dataset['timestamps']]
-            plt.plot(*plot_data, label=dataset['label'], alpha=0.6)
-        else:
-            plot_data[0] = range(1, len(plot_data[1]) + 1)
-            plt.plot(*plot_data, args.line_style, label=dataset['label'])
-            if not args.no_fill:
-                plt.fill_between(*plot_data, alpha=0.3)
-
-    if args.h24:
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-        plt.xlabel('Time (HH:MM:SS)')
-    else:
-        plt.xlabel('Seconds since capture')
-    plt.legend()
-
-plt.ylabel('Power (W)')
-plt.grid()
+# Show plot
 plt.show()

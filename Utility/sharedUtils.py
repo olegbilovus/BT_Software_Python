@@ -4,6 +4,9 @@ import sqlite3
 from datetime import datetime
 
 import pandas as pd
+import re
+
+SAME_DATE = '2020-01-01'
 
 
 # Get the filename from a path
@@ -34,6 +37,11 @@ def set_same_date(timestamp, year=2020, month=1, day=1):
     return datetime.fromisoformat(timestamp).replace(year, month, day).isoformat()
 
 
+# Get time from a timestamp
+def get_time_from_timestamp(timestamp):
+    return datetime.fromisoformat(timestamp).time().isoformat()
+
+
 # Add basic arguments to manage the db to a parser
 def parser_add_db_args(parser):
     parser.add_argument('--db', required=True, help='sqlite3 database to write to')
@@ -58,7 +66,9 @@ def parser_add_sql_args(parser):
 def parser_add_matplotlib_args(parser, default_line_style='-', default_color=None):
     parser.add_argument('--no_fill', help='Do not fill the area under the line', action='store_true')
     parser.add_argument('--line_style', help='Choose a custom line style', default=default_line_style)
+    parser.add_argument('--marker', help='Choose a custom marker')
     parser.add_argument('--color', help='Choose a custom color', default=default_color)
+    parser.add_argument('--no_grid', help='Do not show the grid', action='store_true')
 
 
 # Get db paths for directories
@@ -81,24 +91,33 @@ def check_db_files_exist(db_paths):
 
 # Choose the right SQL query to execute
 # "where data" should be a string with the SQL data of conditions
-def choose_sql_query(start, end, fields, table, where_data=None):
+def choose_sql_query(start, end, fields, table, where_data=None, h24=False):
+    if h24 and (start or end):
+        fields_0 = f'time({fields[0]})'
+    else:
+        fields_0 = fields[0]
+
     sql_base = f'SELECT {",".join(fields)} FROM {table}'
     order_by = f'ORDER BY {fields[0]}'
     where_data = 'true' if not where_data else f' {where_data}'
     if start and end:
-        return f'{sql_base} WHERE {where_data} AND {fields[0]} BETWEEN ? AND ? {order_by}', (start, end)
+        start = get_time_from_timestamp(start)
+        end = get_time_from_timestamp(end)
+        return f'{sql_base} WHERE {where_data} AND {fields_0} BETWEEN ? AND ? {order_by}', (start, end)
     elif start:
-        return f'{sql_base} WHERE {where_data} AND {fields[0]} >= ? {order_by}', (start,)
+        start = get_time_from_timestamp(start)
+        return f'{sql_base} WHERE {where_data} AND {fields_0} >= ? {order_by}', (start,)
     elif end:
-        return f'{sql_base} WHERE {where_data} AND {fields[0]} <= ? {order_by}', (end,)
+        end = get_time_from_timestamp(end)
+        return f'{sql_base} WHERE {where_data} AND {fields_0} <= ? {order_by}', (end,)
     else:
         return f'{sql_base} WHERE {where_data} {order_by}', ()
 
 
 # Get data from a db
-def get_data_from_db(db_path, start, end, fields, table, where_data=None):
+def get_data_from_db(db_path, start, end, fields, table, where_data=None, h24=False):
     with sqlite3.connect(db_path) as conn:
-        sql_query, sql_args = choose_sql_query(start, end, fields, table, where_data)
+        sql_query, sql_args = choose_sql_query(start, end, fields, table, where_data, h24)
         return conn.execute(sql_query, sql_args).fetchall()
 
 
@@ -109,3 +128,67 @@ def get_data_frame_from_data(data, fields, grp_freq='1s'):
     df = df.groupby(pd.Grouper(key=fields[0], freq=grp_freq))
 
     return df
+
+
+# Plot data from dataset
+def plot_data_from_dataset(dataset, fields, ax, time=False, no_fill=False, line_style='-', color=None, marker=None):
+    plot_data = [None, dataset['df'][fields[1]]]
+    if time:
+        plot_data[0] = dataset['df'][fields[0]]
+    else:
+        plot_data[0] = range(1, len(plot_data[1]) + 1)
+
+    ax.plot(*plot_data, label=dataset['label'], linestyle=line_style, color=color, marker=marker)
+    if not no_fill:
+        if color:
+            ax.fill_between(*plot_data, color=color, alpha=0.3)
+        else:
+            ax.fill_between(*plot_data, alpha=0.3)
+
+
+# Set options for fig, ax and plt
+def set_fig_ax(fig, ax, title, x_label, y_label, legend=False, no_grid=False, maximize=False, plt=None):
+    fig.tight_layout()
+    ax.set_title(title)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    if legend:
+        ax.legend()
+    if not no_grid:
+        ax.grid()
+    if maximize and plt:
+        fig_manager = plt.get_current_fig_manager()
+        fig_manager.window.showMaximized()
+
+
+# Create title for one db plot
+def get_plot_title_one_db_from_dataset(dataset):
+    return f'{dataset["label"]} [{dataset["first_timestamp"]} - {dataset["last_timestamp"]}]'
+
+
+# Plot data from datasets
+def plot_data_from_datasets(plt, datasets, fields, y_label, no_fill=False, line_style='-', color=None, marker=None,
+                            no_grid=False, time=False, h24=False, date_format=None, grp_freq='1s'):
+    datasets_len = len(datasets)
+
+    # Plot the datasets
+    fig, ax = plt.subplots()
+    if datasets_len == 1:
+        title = get_plot_title_one_db_from_dataset(datasets[0])
+        legend = False
+        plot_data_from_dataset(datasets[0], fields, ax, time, no_fill, line_style,
+                               color, marker)
+    else:
+        title = None
+        legend = True
+        for dataset in datasets:
+            plot_data_from_dataset(dataset, fields, ax, h24, no_fill, line_style,
+                                   marker=marker)
+
+    # Set options
+    if time or h24:
+        ax.xaxis.set_major_formatter(date_format)
+        x_label = 'Time (HH:MM:SS)'
+    else:
+        x_label = f'Scale time (1:{grp_freq})'
+    set_fig_ax(fig, ax, title, x_label, y_label, legend, no_grid, True, plt)
