@@ -1,5 +1,3 @@
-import ntpath
-
 import scapy.all as scapy
 
 
@@ -21,8 +19,3 @@ def get_ip_layer(pkt):
         return scapy.IPv6
     else:
         return None
-
-
-def file_name(file_path):
-    head, tail = ntpath.split(file_path)
-    return tail or ntpath.basename(head)

@@ -1,3 +1,9 @@
+import os
+import sys
+
+_path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(_path_parent)
+
 import argparse
 import sqlite3
 from datetime import datetime
