@@ -1,3 +1,4 @@
 matplotlib
-dpkt
+scapy
 pandas
+tqdm
