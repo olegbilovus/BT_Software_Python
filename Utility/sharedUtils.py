@@ -1,4 +1,5 @@
 import argparse
+import configparser
 import ntpath
 import os
 import sqlite3
@@ -38,6 +39,14 @@ def set_same_date(timestamp, year=2020, month=1, day=1):
 # Get time from a timestamp
 def get_time_from_timestamp(timestamp):
     return datetime.fromisoformat(timestamp).time().isoformat()
+
+
+# Get basic config variables from a file
+def get_config_from_file(config_file, section):
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    section = config[section]
+    return section['file_end'], section['fields'].split(' '), section['table_name'], section['where_data']
 
 
 # Add basic arguments to manage the db to a parser
@@ -179,11 +188,16 @@ def plot_data_from_dataset(dataset, fields, ax, time=False, no_fill=False, line_
 
 
 # Set options for fig, ax and plt
-def set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend=False, no_grid=False, maximize=False, plt=None):
+def set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend=False, no_grid=False, maximize=False, plt=None,
+               x_time=False):
     fig.tight_layout()
     ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
+    if not x_time:
+        ax.ticklabel_format(useOffset=False)
+    else:
+        ax.ticklabel_format(style='plain', axis='y')
     if legend:
         ax.legend()
     if not no_grid:
@@ -224,4 +238,4 @@ def plot_data_from_datasets(plt, w_title, datasets, fields, y_label, no_fill=Fal
         x_label = 'Time (HH:MM:SS)'
     else:
         x_label = f'Scale time (1:{grp_freq})'
-    set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend, no_grid, True, plt)
+    set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend, no_grid, True, plt, time or h24)

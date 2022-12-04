@@ -12,7 +12,11 @@ import matplotlib.pyplot as plt
 
 from Utility import sharedUtils
 
-file_end = 'Power.db'
+# Parse config file
+file_end, fields, table_name, where_data = sharedUtils.get_config_from_file(os.path.join(_path_parent, 'config.ini'),
+                                                                            'POWER')
+
+# Parse command line arguments
 parser = sharedUtils.get_basic_parser('Plot power data from SQL', file_end, default_color='green')
 parser.add_argument('--power_sum', help='Show power sum on y axis. Default is power mean', action='store_true')
 args = parser.parse_args()
@@ -26,11 +30,9 @@ else:
 sharedUtils.validate_args(args)
 
 # Create the datasets
-fields = ['timestamp', 'power']
-WHERE_DATA = 'is_valid = 1'
 datasets = []
 for db_path in args.db:
-    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'plug_load', WHERE_DATA, h24=args.h24)
+    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, table_name, where_data, args.h24)
 
     if data:
         data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)
