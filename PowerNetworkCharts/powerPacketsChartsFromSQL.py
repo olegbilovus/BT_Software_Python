@@ -88,7 +88,4 @@ sharedUtils.plot_data_from_datasets(plt, 'scatter', sharedUtils.get_file_name_fr
                                     y_label, x_label=x_label, no_fill=True, color=args.color, marker=args.marker,
                                     no_grid=args.no_grid, grp_freq=args.grp_freq, keep_xdata=True)
 
-for dataset in datasets:
-    print(dataset['df'].corr(method='pearson'))
-
 plt.show()

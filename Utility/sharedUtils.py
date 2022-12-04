@@ -82,8 +82,6 @@ def parser_add_matplotlib_args(parser, default_line_style='None', default_color=
     parser.add_argument('--marker', help='Choose a custom marker')
     parser.add_argument('--color', help='Choose a custom color', default=default_color)
     parser.add_argument('--no_grid', help='Do not show the grid', action='store_true')
-    parser.add_argument('--no_combine', help='Do not combine the data, show in different plots', action='store_true')
-    parser.add_argument('--split', help='Same as --no_combine but each plot in different window', action='store_true')
 
 
 # Add basic arguments to manage time and h24
@@ -141,9 +139,6 @@ def validate_args(args):
 
     if args.h24 and len_dbs < 2:
         raise argparse.ArgumentTypeError('Cannot use --h24 with less than two DB files')
-
-    if len_dbs == 1 and (args.no_combine or args.split):
-        raise argparse.ArgumentTypeError('Cannot use --no_combine or --split with only one DB file')
 
 
 # Choose the right SQL query to execute
@@ -235,7 +230,7 @@ def plot_data_from_dataset(dataset, plot_f, fields, ax, time=False, no_fill=Fals
 # Plot data from datasets
 def plot_data_from_datasets(plt, plot_f, w_title, datasets, fields, y_label, x_label=None, no_fill=False,
                             line_style='None', color=None, marker=None, no_grid=False, time=False, h24=False,
-                            date_format=None, grp_freq='1s', keep_xdata=False, no_combine=False, split=False):
+                            date_format=None, grp_freq='1s', keep_xdata=False):
     datasets_len = len(datasets)
 
     # Plot the datasets
