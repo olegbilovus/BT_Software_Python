@@ -14,10 +14,14 @@ from tqdm import tqdm
 import utils
 from Utility import sharedUtils
 
+# Parse config file
+file_end, _, table_name, _ = sharedUtils.get_config_from_file(os.path.join(_path_parent, 'config.ini'),
+                                                              'NETWORK')
+
 # Parse command line arguments
 parser = argparse.ArgumentParser(
     description='Convert pcap file to SQL stats, it considers only IP packets. ARP and some other packets are ignored.')
-sharedUtils.parser_add_db_args(parser)
+sharedUtils.parser_add_db_args(parser, table_name)
 parser.add_argument('--pcap', help='pcap file')
 print_args = parser.add_mutually_exclusive_group()
 print_args.add_argument('--n_packets', help='number of packets to process, used for the progress bar', type=int)
@@ -25,18 +29,19 @@ print_args.add_argument('-v', '--verbose', action='store_true', help='verbose ou
 args = parser.parse_args()
 
 # Connect to the database
-conn = sqlite3.connect(args.db)
+db_name = args.db if sharedUtils.check_file_end(args.db, file_end) else args.db + file_end
+conn = sqlite3.connect(db_name)
 c = conn.cursor()
 
 # Reset the database if requested
 if args.db_reset:
-    c.execute('DROP TABLE IF EXISTS pcap_stats')
+    c.execute('DROP TABLE IF EXISTS ' + table_name)
     conn.commit()
 
 # Create the table if it doesn't exist
 try:
     c.execute(
-        'CREATE TABLE pcap_stats (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT)')
+        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT)')
 except sqlite3.OperationalError:
     pass
 
@@ -81,5 +86,5 @@ conn.close()
 if args.verbose:
     print(VERBOSE_HEADERS)
 
-# Print the skipped packets
 print(f'Skipped {skipped} no IP packets')
+print(f'Saved packets to {db_name}')

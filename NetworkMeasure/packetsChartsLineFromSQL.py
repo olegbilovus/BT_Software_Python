@@ -12,8 +12,11 @@ import matplotlib.pyplot as plt
 
 from Utility import sharedUtils
 
+# Parse config file
+file_end, fields, table_name, where_data = sharedUtils.get_config_from_file(os.path.join(_path_parent, 'config.ini'),
+                                                                            'NETWORK')
+
 # Parse command line arguments
-file_end = 'IP_Packets.db'
 parser = sharedUtils.get_basic_parser('Plot the stats from a SQL file generated with ipPacketsToStatsSQL.py', file_end)
 parser.add_argument('--bytes', help='Show bytes sum on y axis. Default is packets count', action='store_true')
 args = parser.parse_args()
@@ -27,10 +30,9 @@ else:
 sharedUtils.validate_args(args)
 
 # Create the datasets
-fields = ['timestamp', 'length']
 datasets = []
 for db_path in args.db:
-    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, 'pcap_stats', h24=args.h24)
+    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, table_name, where_data, args.h24)
 
     if data:
         data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)
@@ -56,8 +58,10 @@ if args.bytes:
     y_label = f'Bytes/{args.grp_freq}'
 else:
     y_label = f'Packets/{args.grp_freq}'
-sharedUtils.plot_data_from_datasets(plt, sharedUtils.get_file_name_from_path(__file__), datasets, fields, y_label,
-                                    no_fill=args.no_fill, line_style=args.line_style, color=args.color,
+if args.line_style == 'None':
+    args.line_style = '-'
+sharedUtils.plot_data_from_datasets(plt, 'plot', sharedUtils.get_file_name_from_path(__file__), datasets, fields,
+                                    y_label, no_fill=args.no_fill, line_style=args.line_style, color=args.color,
                                     marker=args.marker, no_grid=args.no_grid, time=args.time, h24=args.h24,
                                     date_format=mdates.DateFormatter('%H:%M:%S'), grp_freq=args.grp_freq)
 
