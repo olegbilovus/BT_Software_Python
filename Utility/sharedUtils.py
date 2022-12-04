@@ -36,6 +36,11 @@ def set_same_date(timestamp, year=2020, month=1, day=1):
     return datetime.fromisoformat(timestamp).replace(year, month, day).isoformat()
 
 
+# Set same date for data
+def set_same_date_data(data, year=2020, month=1, day=1):
+    return [(set_same_date(d[0], year, month, day), d[1]) for d in data]
+
+
 # Get time from a timestamp
 def get_time_from_timestamp(timestamp):
     return datetime.fromisoformat(timestamp).time().isoformat()
@@ -50,9 +55,10 @@ def get_config_from_file(config_file, section):
 
 
 # Add basic arguments to manage the db to a parser
-def parser_add_db_args(parser):
+def parser_add_db_args(parser, table_name=''):
     parser.add_argument('--db', required=True, help='sqlite3 database to write to')
-    parser.add_argument('--db_reset', action='store_true', help='Reset the database')
+    parser.add_argument('--db_reset', action='store_true',
+                        help=f'Drop the table {table_name} if exists and create it again before writing data')
 
 
 # Add basic arguments to manage db_dir to a parser
@@ -70,12 +76,14 @@ def parser_add_sql_args(parser):
 
 
 # Add basic arguments to manage matplotlib to a parser
-def parser_add_matplotlib_args(parser, default_line_style='-', default_color=None):
+def parser_add_matplotlib_args(parser, default_line_style='None', default_color=None):
     parser.add_argument('--no_fill', help='Do not fill the area under the line', action='store_true')
     parser.add_argument('--line_style', help='Choose a custom line style', default=default_line_style)
     parser.add_argument('--marker', help='Choose a custom marker')
     parser.add_argument('--color', help='Choose a custom color', default=default_color)
     parser.add_argument('--no_grid', help='Do not show the grid', action='store_true')
+    parser.add_argument('--no_combine', help='Do not combine the data, show in different plots', action='store_true')
+    parser.add_argument('--split', help='Same as --no_combine but each plot in different window', action='store_true')
 
 
 # Add basic arguments to manage time and h24
@@ -134,6 +142,9 @@ def validate_args(args):
     if args.h24 and len_dbs < 2:
         raise argparse.ArgumentTypeError('Cannot use --h24 with less than two DB files')
 
+    if len_dbs == 1 and (args.no_combine or args.split):
+        raise argparse.ArgumentTypeError('Cannot use --no_combine or --split with only one DB file')
+
 
 # Choose the right SQL query to execute
 # "where data" should be a string with the SQL data of conditions
@@ -176,20 +187,9 @@ def get_data_frame_from_data(data, fields, grp_freq='1s'):
     return df
 
 
-# Plot data from dataset
-def plot_data_from_dataset(dataset, fields, ax, time=False, no_fill=False, line_style='-', color=None, marker=None):
-    plot_data = [None, dataset['df'][fields[1]]]
-    if time:
-        plot_data[0] = dataset['df'][fields[0]]
-    else:
-        plot_data[0] = range(1, len(plot_data[1]) + 1)
-
-    ax.plot(*plot_data, label=dataset['label'], linestyle=line_style, color=color, marker=marker)
-    if not no_fill:
-        if color:
-            ax.fill_between(*plot_data, color=color, alpha=0.3)
-        else:
-            ax.fill_between(*plot_data, alpha=0.3)
+# Create title for one db plot
+def get_plot_title_one_db_from_dataset(dataset):
+    return f'{dataset["label"]} [{dataset["first_timestamp"]} - {dataset["last_timestamp"]}]'
 
 
 # Set options for fig, ax and plt
@@ -213,34 +213,67 @@ def set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend=False, no_grid=
         fig_manager.set_window_title(w_title)
 
 
-# Create title for one db plot
-def get_plot_title_one_db_from_dataset(dataset):
-    return f'{dataset["label"]} [{dataset["first_timestamp"]} - {dataset["last_timestamp"]}]'
+# Plot data from dataset
+def plot_data_from_dataset(dataset, plot_f, fields, ax, time=False, no_fill=False, line_style='-', color=None,
+                           marker=None, keep_xdata=False):
+    plot_data = [None, dataset['df'][fields[1]]]
+    if keep_xdata:
+        plot_data[0] = dataset['df'][fields[0]]
+    elif time:
+        plot_data[0] = dataset['df'][fields[0]]
+    else:
+        plot_data[0] = range(1, len(plot_data[1]) + 1)
+
+    plot_f(*plot_data, label=dataset['label'], linestyle=line_style, color=color, marker=marker)
+    if not no_fill:
+        if color:
+            ax.fill_between(*plot_data, color=color, alpha=0.3)
+        else:
+            ax.fill_between(*plot_data, alpha=0.3)
 
 
 # Plot data from datasets
-def plot_data_from_datasets(plt, w_title, datasets, fields, y_label, no_fill=False, line_style='-', color=None,
-                            marker=None, no_grid=False, time=False, h24=False, date_format=None, grp_freq='1s'):
+def plot_data_from_datasets(plt, plot_f, w_title, datasets, fields, y_label, x_label=None, no_fill=False,
+                            line_style='None', color=None, marker=None, no_grid=False, time=False, h24=False,
+                            date_format=None, grp_freq='1s', keep_xdata=False, no_combine=False, split=False):
     datasets_len = len(datasets)
 
     # Plot the datasets
     fig, ax = plt.subplots()
+    plot_f = getattr(ax, plot_f)
     if datasets_len == 1:
         title = get_plot_title_one_db_from_dataset(datasets[0])
         legend = False
-        plot_data_from_dataset(datasets[0], fields, ax, time, no_fill, line_style,
-                               color, marker)
+        plot_data_from_dataset(datasets[0], plot_f, fields, ax, time, no_fill, line_style,
+                               color, marker, keep_xdata=keep_xdata)
     else:
         title = None
         legend = True
         for dataset in datasets:
-            plot_data_from_dataset(dataset, fields, ax, h24, no_fill, line_style,
-                                   marker=marker)
+            plot_data_from_dataset(dataset, plot_f, fields, ax, h24, no_fill, line_style,
+                                   marker=marker, keep_xdata=keep_xdata)
 
     # Set options
-    if time or h24:
-        ax.xaxis.set_major_formatter(date_format)
-        x_label = 'Time (HH:MM:SS)'
-    else:
-        x_label = f'Scale time (1:{grp_freq})'
+    if not x_label:
+        if time or h24:
+            ax.xaxis.set_major_formatter(date_format)
+            x_label = 'Time (HH:MM:SS)'
+        else:
+            x_label = f'Scale time (1:{grp_freq})'
     set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend, no_grid, True, plt, time or h24)
+
+
+# Calculate the correlation between two fields in a merged data frame
+def get_correlation_dataframe(df_merge, field0, field1):
+    n = len(df_merge)
+    field0_mean = df_merge[field0].mean()
+    field1_mean = df_merge[field1].mean()
+    s_field0 = df_merge[field0].std()
+    s_field1 = df_merge[field1].std()
+
+    r = 0
+    for i in range(n):
+        r += (df_merge[field0][i] - field0_mean) * (df_merge[field1][i] - field1_mean)
+    r = r / ((n - 1) * s_field0 * s_field1)
+
+    return f'{r:.3f}'

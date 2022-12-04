@@ -58,8 +58,10 @@ if args.power_sum:
     y_label = f'Power (W) sum/{args.grp_freq}'
 else:
     y_label = f'Power (W) /{args.grp_freq}'
-sharedUtils.plot_data_from_datasets(plt, sharedUtils.get_file_name_from_path(__file__), datasets, fields, y_label,
-                                    no_fill=args.no_fill, line_style=args.line_style, color=args.color,
+if args.line_style == 'None':
+    args.line_style = '-'
+sharedUtils.plot_data_from_datasets(plt, 'plot', sharedUtils.get_file_name_from_path(__file__), datasets, fields,
+                                    y_label, no_fill=args.no_fill, line_style=args.line_style, color=args.color,
                                     marker=args.marker, no_grid=args.no_grid, time=args.time, h24=args.h24,
                                     date_format=mdates.DateFormatter('%H:%M:%S'), grp_freq=args.grp_freq)
 
