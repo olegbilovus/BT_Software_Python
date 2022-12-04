@@ -29,7 +29,7 @@ print_args.add_argument('-v', '--verbose', action='store_true', help='verbose ou
 args = parser.parse_args()
 
 # Connect to the database
-db_name = args.db + file_end
+db_name = args.db if sharedUtils.check_file_end(args.db, file_end) else args.db + file_end
 conn = sqlite3.connect(db_name)
 c = conn.cursor()
 

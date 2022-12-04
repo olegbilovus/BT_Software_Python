@@ -46,7 +46,7 @@ def get_config_from_file(config_file, section):
     config = configparser.ConfigParser()
     config.read(config_file)
     section = config[section]
-    return section['file_end'], section['fields'].split(' '), section['table_name'], section['where_data']
+    return config['COMMON']['file_end'], section['fields'].split(' '), section['table_name'], section['where_data']
 
 
 # Add basic arguments to manage the db to a parser
@@ -102,12 +102,17 @@ def parser_add_pandas_args(parser):
     parser.add_argument('--grp_freq', help='Frequency to group data', default='1s')
 
 
-# Get db paths for directories
+# Check ends with proper file end
+def check_file_end(db_path, file_end):
+    return db_path.endswith(file_end)
+
+
+# Get db paths from directories
 def get_db_paths_from_dirs(db_dirs, file_end):
     db_paths = []
     for dir_name in db_dirs:
         for file in os.listdir(dir_name):
-            if file.endswith(file_end):
+            if check_file_end(file, file_end):
                 db_paths.append(os.path.join(dir_name, file))
 
     return db_paths
