@@ -90,33 +90,35 @@ class NetioPowerCableRest101(Plug):
 
 
 class PowerLive:
-    def __init__(self, plug: Plug, db_name=None, db_reset=False, no_graph=False, n_threads=3, captures_limit=None,
-                 verbose=False):
+    def __init__(self, plug: Plug, db_name, db_reset=False, no_graph=False, n_threads=3, captures_limit=None,
+                 interval=1000, verbose=False):
         self.plug = plug
         self.verbose = verbose
         self.captures_limit = captures_limit
         self.captures = 0
+        self.file_end, self.fields, self.table_name, _ = sharedUtils.get_config_from_file(
+            os.path.join(_path_parent, 'config.ini'), 'POWER')
 
-        self.db_name = db_name
-        self.conn = sqlite3.connect(db_name, check_same_thread=False)
+        self.db_name = db_name + self.file_end
+        self.conn = sqlite3.connect(self.db_name, check_same_thread=False)
         self.cur = self.conn.cursor()
 
         if db_reset:
-            self.cur.execute('DROP TABLE IF EXISTS plug_load')
+            self.cur.execute('DROP TABLE IF EXISTS ' + self.table_name)
             self.conn.commit()
             print('Deleted all rows from table')
 
         try:
             self.cur.execute(
-                'CREATE TABLE plug_load (timestamp TIMESTAMP PRIMARY KEY, power REAL, is_valid BOOLEAN)')
+                'CREATE TABLE ' + self.table_name + ' (timestamp TIMESTAMP PRIMARY KEY, power REAL, is_valid BOOLEAN)')
             self.conn.commit()
             print('Created table')
         except sqlite3.OperationalError:
             pass
-        self._sql_query = 'INSERT INTO plug_load VALUES (?, ?, ?)'
+        self._sql_query = 'INSERT INTO ' + self.table_name + ' VALUES (?, ?, ?)'
 
         self.cur.execute(self._sql_query, (datetime.utcnow(), 0, 0))
-        print(f'Data will be saved to {db_name}')
+        print(f'Data will be saved to {self.db_name}')
 
         if not self.plug.turn_on():
             exit('Failed to turn on plug')
@@ -125,20 +127,20 @@ class PowerLive:
         self._lock = threading.Lock()
         if not no_graph:
             init_data = self.get_data()
-            self.x1 = [1]
-            self.y1 = [init_data['power']]
+            self.x1 = [1.0]
+            self.y1 = [init_data[self.fields[1]]]
             self.send_to_sql(init_data)
 
             self.fig, self.ax1 = plt.subplots()
             self.fig.suptitle(f'{self.plug.name} Power Live [{datetime.utcnow()}] (UTC)')
-            self.ax1.set_xlabel('Time (s)')
+            self.ax1.set_xlabel(f'Time (s) / Interval: {interval}ms')
             self.ax1.set_ylabel('Power (W)')
             self.ax1.grid()
             self.ln1, = self.ax1.plot([], [], 'g-')
 
             for _ in range(n_threads):
                 threading.Thread(target=self.update, args=(start,), daemon=True).start()
-            self.ani = FuncAnimation(self.fig, start.put, interval=1000)
+            self.ani = FuncAnimation(self.fig, start.put, interval=interval)
 
             plt.show()
         else:
@@ -146,10 +148,10 @@ class PowerLive:
                 threading.Thread(target=self.worker_no_graph, args=(start,), daemon=True).start()
             while True:
                 start.put(True)
-                time.sleep(1)
+                time.sleep(interval / 1000)
 
     def get_data(self):
-        data = {'timestamp': datetime.utcnow(), 'power': self.plug.get_load(), 'is_valid': 1}
+        data = {self.fields[0]: datetime.utcnow(), self.fields[1]: self.plug.get_load(), 'is_valid': 1}
         self.captures += 1
         if self.verbose:
             print(f'[#{self.captures}]{data}')
@@ -165,15 +167,15 @@ class PowerLive:
             self.send_to_sql(data)
 
     def update_full_graph(self, data):
-        self.x1.append(self.x1[-1] + 1)
-        self.y1.append(data['power'])
+        self.x1.append(self.x1[-1] + self.ani._interval / 1000)
+        self.y1.append(data[self.fields[1]])
         self.ln1.set_data(self.x1, self.y1)
         self.ax1.relim()
         self.ax1.autoscale_view()
 
     def send_to_sql(self, data):
         with self._lock:
-            self.cur.execute(self._sql_query, (data['timestamp'], data['power'], data['is_valid']))
+            self.cur.execute(self._sql_query, (data[self.fields[0]], data[self.fields[1]], data['is_valid']))
             self.conn.commit()
 
     def worker_no_graph(self, start):
@@ -208,6 +210,8 @@ if __name__ == '__main__':
     parser.add_argument('--no_graph', action='store_true', help='Do not show graph')
     parser.add_argument('--threads', type=int, default=3, help='Number of threads to use. Default: 3')
     parser.add_argument('--captures_limit', type=int, help='Number of captures to make before exiting')
+    parser.add_argument('--interval', type=int, default=1000,
+                        help='Interval between captures in milliseconds. Default: 1000')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose mode, print data to console')
     args = parser.parse_args()
 
@@ -216,5 +220,9 @@ if __name__ == '__main__':
     else:
         plug_chosen = ShellyPlugS(args.ip)
 
+    if not args.db:
+        args.db = plug_chosen.name
+
     PowerLive(plug_chosen, db_name=args.db, db_reset=args.db_reset,
-              no_graph=args.no_graph, n_threads=args.threads, captures_limit=args.captures_limit, verbose=args.verbose)
+              no_graph=args.no_graph, n_threads=args.threads, captures_limit=args.captures_limit,
+              interval=args.interval, verbose=args.verbose)
