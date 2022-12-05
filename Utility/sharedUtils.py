@@ -37,8 +37,15 @@ def set_same_date(timestamp, year=2020, month=1, day=1):
 
 
 # Set same date for data
-def set_same_date_data(data, year=2020, month=1, day=1):
-    return [(set_same_date(d[0], year, month, day), d[1]) for d in data]
+def set_same_date_data(data, year=2020, month=1, day=1, ts_index=0):
+    _data = []
+    for row in data:
+        _r = row[:ts_index]
+        _r.append(set_same_date(row[ts_index], year, month, day))
+        _r.extend(row[ts_index + 1:])
+        _data.append(tuple(_r))
+
+    return _data
 
 
 # Get time from a timestamp

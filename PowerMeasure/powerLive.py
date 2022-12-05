@@ -110,14 +110,13 @@ class PowerLive:
 
         try:
             self.cur.execute(
-                'CREATE TABLE ' + self.table_name + ' (timestamp TIMESTAMP PRIMARY KEY, power REAL, is_valid BOOLEAN)')
+                'CREATE TABLE ' + self.table_name + ' (timestamp TIMESTAMP PRIMARY KEY, load REAL)')
             self.conn.commit()
             print('Created table')
         except sqlite3.OperationalError:
             pass
-        self._sql_query = 'INSERT INTO ' + self.table_name + ' VALUES (?, ?, ?)'
+        self._sql_query = 'INSERT INTO ' + self.table_name + ' VALUES (?, ?)'
 
-        self.cur.execute(self._sql_query, (datetime.utcnow(), 0, 0))
         print(f'Data will be saved to {self.db_name}')
 
         if not self.plug.turn_on():
@@ -151,7 +150,7 @@ class PowerLive:
                 time.sleep(interval / 1000)
 
     def get_data(self):
-        data = {self.fields[0]: datetime.utcnow(), self.fields[1]: self.plug.get_load(), 'is_valid': 1}
+        data = {self.fields[0]: datetime.utcnow().isoformat(), self.fields[1]: self.plug.get_load()}
         self.captures += 1
         if self.verbose:
             print(f'[#{self.captures}]{data}')
@@ -175,7 +174,7 @@ class PowerLive:
 
     def send_to_sql(self, data):
         with self._lock:
-            self.cur.execute(self._sql_query, (data[self.fields[0]], data[self.fields[1]], data['is_valid']))
+            self.cur.execute(self._sql_query, (data[self.fields[0]], data[self.fields[1]]))
             self.conn.commit()
 
     def worker_no_graph(self, start):
