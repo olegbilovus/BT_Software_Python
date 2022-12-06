@@ -237,7 +237,7 @@ def plot_data_from_dataset(dataset, plot_f, fields, ax, time=False, no_fill=Fals
 # Plot data from datasets
 def plot_data_from_datasets(plt, plot_f, w_title, datasets, fields, y_label, x_label=None, no_fill=False,
                             line_style='None', color=None, marker=None, no_grid=False, time=False, h24=False,
-                            date_format=None, grp_freq='1s', keep_xdata=False):
+                            date_format=None, grp_freq='1s', keep_xdata=False, force_legend=False):
     datasets_len = len(datasets)
 
     # Plot the datasets
@@ -245,7 +245,7 @@ def plot_data_from_datasets(plt, plot_f, w_title, datasets, fields, y_label, x_l
     plot_f = getattr(ax, plot_f)
     if datasets_len == 1:
         title = get_plot_title_one_db_from_dataset(datasets[0])
-        legend = False
+        legend = force_legend
         plot_data_from_dataset(datasets[0], plot_f, fields, ax, time, no_fill, line_style,
                                color, marker, keep_xdata=keep_xdata)
     else:
