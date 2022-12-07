@@ -163,14 +163,13 @@ def choose_sql_query(start, end, fields, table, where_data=None, h24=False):
         start = get_time_from_timestamp(start)
         end = get_time_from_timestamp(end)
         return f'{sql_base} WHERE {where_data} AND {fields_0} BETWEEN ? AND ? {order_by}', (start, end)
-    elif start:
+    if start:
         start = get_time_from_timestamp(start)
         return f'{sql_base} WHERE {where_data} AND {fields_0} >= ? {order_by}', (start,)
-    elif end:
+    if end:
         end = get_time_from_timestamp(end)
         return f'{sql_base} WHERE {where_data} AND {fields_0} <= ? {order_by}', (end,)
-    else:
-        return f'{sql_base} WHERE {where_data} {order_by}', ()
+    return f'{sql_base} WHERE {where_data} {order_by}', ()
 
 
 # Get data from a db
