@@ -120,7 +120,7 @@ class PowerLive:
         print(f'Data will be saved to {self.db_name}')
 
         if not self.plug.turn_on():
-            exit('Failed to turn on plug')
+            sys.exit('Failed to turn on plug')
 
         start = queue.Queue()
         self._lock = threading.Lock()
