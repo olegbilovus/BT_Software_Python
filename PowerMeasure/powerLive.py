@@ -1,26 +1,24 @@
+from Utility import sharedUtils
+from matplotlib.animation import FuncAnimation
+import requests
+import matplotlib.pyplot as plt
+import matplotlib
+from datetime import datetime
+from abc import ABC, abstractmethod
+import time
+import threading
+import sqlite3
+import re
+import queue
+import argparse
 import os
 import sys
 
 _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(_path_parent)
 
-import argparse
-import queue
-import re
-import sqlite3
-import threading
-import time
-from abc import ABC, abstractmethod
-from datetime import datetime
-
-import matplotlib
 
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-import requests
-from matplotlib.animation import FuncAnimation
-
-from Utility import sharedUtils
 
 
 class Plug(ABC):
@@ -99,7 +97,8 @@ class PowerLive:
         self.file_end, self.fields, self.table_name, _ = sharedUtils.get_config_from_file(
             os.path.join(_path_parent, 'config.ini'), 'POWER')
 
-        self.db_name = db_name if sharedUtils.check_file_end(db_name, self.file_end) else db_name + self.file_end
+        self.db_name = db_name if sharedUtils.check_file_end(
+            db_name, self.file_end) else db_name + self.file_end
         self.conn = sqlite3.connect(self.db_name, check_same_thread=False)
         self.cur = self.conn.cursor()
 
@@ -131,26 +130,30 @@ class PowerLive:
             self.send_to_sql(init_data)
 
             self.fig, self.ax1 = plt.subplots()
-            self.fig.suptitle(f'{self.plug.name} Power Live [{datetime.utcnow()}] (UTC)')
+            self.fig.suptitle(
+                f'{self.plug.name} Power Live [{datetime.utcnow()}] (UTC)')
             self.ax1.set_xlabel(f'Time (s) / Interval: {interval}ms')
             self.ax1.set_ylabel('Power (W)')
             self.ax1.grid()
             self.ln1, = self.ax1.plot([], [], 'g-')
 
             for _ in range(n_threads):
-                threading.Thread(target=self.update, args=(start,), daemon=True).start()
+                threading.Thread(target=self.update, args=(
+                    start,), daemon=True).start()
             self.ani = FuncAnimation(self.fig, start.put, interval=interval)
 
             plt.show()
         else:
             for _ in range(n_threads):
-                threading.Thread(target=self.worker_no_graph, args=(start,), daemon=True).start()
+                threading.Thread(target=self.worker_no_graph,
+                                 args=(start,), daemon=True).start()
             while True:
                 start.put(True)
                 time.sleep(interval / 1000)
 
     def get_data(self):
-        data = {self.fields[0]: datetime.utcnow().isoformat(), self.fields[1]: self.plug.get_load()}
+        data = {self.fields[0]: datetime.utcnow(
+        ).isoformat(), self.fields[1]: self.plug.get_load()}
         self.captures += 1
         if self.verbose:
             print(f'[#{self.captures}]{data}')
@@ -174,7 +177,8 @@ class PowerLive:
 
     def send_to_sql(self, data):
         with self._lock:
-            self.cur.execute(self._sql_query, (data[self.fields[0]], data[self.fields[1]]))
+            self.cur.execute(
+                self._sql_query, (data[self.fields[0]], data[self.fields[1]]))
             self.conn.commit()
 
     def worker_no_graph(self, start):
@@ -196,22 +200,26 @@ class PowerLive:
 if __name__ == '__main__':
     def ip_type(value):
         if not re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', value):
-            raise argparse.ArgumentTypeError(f'{value} is an invalid IP address')
+            raise argparse.ArgumentTypeError(
+                f'{value} is an invalid IP address')
 
         return value
-
 
     parser = argparse.ArgumentParser('Plug Power Live')
     parser.add_argument('--ip', type=ip_type, required=True, help='Plug IP')
     parser.add_argument('--plug_type', choices=[1, 2], default=1, type=int,
                         help='1 for Shelly Plug S, 2 for Netio PowerCable REST 101x. Default: 1')
     sharedUtils.parser_add_db_args(parser)
-    parser.add_argument('--no_graph', action='store_true', help='Do not show graph')
-    parser.add_argument('--threads', type=int, default=3, help='Number of threads to use. Default: 3')
-    parser.add_argument('--captures_limit', type=int, help='Number of captures to make before exiting')
+    parser.add_argument('--no_graph', action='store_true',
+                        help='Do not show graph')
+    parser.add_argument('--threads', type=int, default=3,
+                        help='Number of threads to use. Default: 3')
+    parser.add_argument('--captures_limit', type=int,
+                        help='Number of captures to make before exiting')
     parser.add_argument('--interval', type=int, default=1000,
                         help='Interval between captures in milliseconds. Default: 1000')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose mode, print data to console')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Verbose mode, print data to console')
     args = parser.parse_args()
 
     if args.plug_type == 2:

@@ -1,17 +1,16 @@
+from Utility import sharedUtils
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib
 import os
 import sys
 
 _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(_path_parent)
 
-import matplotlib
 
 matplotlib.use('Qt5Agg')
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
-from Utility import sharedUtils
 
 # Parse config file
 file_end, power_fields, power_table_name, power_where_data = sharedUtils.get_config_from_file(
@@ -21,9 +20,12 @@ _, pkt_fields, pkt_table_name, pkt_where_data = sharedUtils.get_config_from_file
 fields = [power_fields[1], pkt_fields[1]]
 
 # Parse command line arguments
-parser = sharedUtils.get_basic_parser('Plot power and packet charts from SQL database', file_end)
-parser.add_argument('--power_sum', help='Use power sum. Default is power mean', action='store_true')
-parser.add_argument('--bytes', help='Use bytes sum. Default is packets count', action='store_true')
+parser = sharedUtils.get_basic_parser(
+    'Plot power and packet charts from SQL database', file_end)
+parser.add_argument(
+    '--power_sum', help='Use power sum. Default is power mean', action='store_true')
+parser.add_argument(
+    '--bytes', help='Use bytes sum. Default is packets count', action='store_true')
 parser.add_argument('--invert_axis', help='Display on x axe what would normally be displayed n y axe and vice-versa',
                     action='store_true')
 args = parser.parse_args()
@@ -45,8 +47,10 @@ for db_path in args.db:
                                             args.h24)
 
     if power_data and pkt_data:
-        power_df = sharedUtils.get_data_frame_from_data(power_data, power_fields, grp_freq=args.grp_freq)
-        pkt_df = sharedUtils.get_data_frame_from_data(pkt_data, pkt_fields, grp_freq=args.grp_freq)
+        power_df = sharedUtils.get_data_frame_from_data(
+            power_data, power_fields, grp_freq=args.grp_freq)
+        pkt_df = sharedUtils.get_data_frame_from_data(
+            pkt_data, pkt_fields, grp_freq=args.grp_freq)
 
         if args.power_sum:
             power_df = power_df.sum()
@@ -60,7 +64,8 @@ for db_path in args.db:
         power_df = power_df.reset_index()
         pkt_df = pkt_df.reset_index()
 
-        df_merge = pd.merge(power_df, pkt_df, on=pkt_fields[0], how='inner').dropna().reset_index()
+        df_merge = pd.merge(
+            power_df, pkt_df, on=pkt_fields[0], how='inner').dropna().reset_index()
         label = f'{sharedUtils.get_file_name_from_path(db_path)} ({sharedUtils.get_correlation_dataframe(df_merge, *fields)})'
         datasets.append({
             'label': label,

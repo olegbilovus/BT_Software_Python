@@ -25,7 +25,8 @@ conn = sqlite3.connect(argparse.sql)
 c = conn.cursor()
 
 # Connect to InfluxDB
-client = InfluxDBClient(url=argparse.influx, token=argparse.token, org=argparse.org)
+client = InfluxDBClient(url=argparse.influx,
+                        token=argparse.token, org=argparse.org)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
 # Get list of tables
@@ -59,7 +60,8 @@ for table in tqdm(tables, unit='tables', desc='Processing tables'):
         point = Point(table_name)
         ts = row[ts_index]
         if argparse.now:
-            ts = set_same_date(ts, year=today.year, month=today.month, day=today.day - 1)
+            ts = set_same_date(ts, year=today.year,
+                               month=today.month, day=today.day - 1)
         point.time(datetime.fromisoformat(ts))
         for i in range(len(columns)):
             if i != ts_index:

@@ -63,7 +63,8 @@ def get_config_from_file(config_file, section):
 
 # Add basic arguments to manage the db to a parser
 def parser_add_db_args(parser, table_name=''):
-    parser.add_argument('--db', required=True, help='sqlite3 database to write to')
+    parser.add_argument('--db', required=True,
+                        help='sqlite3 database to write to')
     parser.add_argument('--db_reset', action='store_true',
                         help=f'Drop the table {table_name} if exists and create it again before writing data')
 
@@ -71,31 +72,40 @@ def parser_add_db_args(parser, table_name=''):
 # Add basic arguments to manage db_dir to a parser
 def parser_add_db_dir_args(parser, file_end):
     db_grp = parser.add_mutually_exclusive_group(required=True)
-    db_grp.add_argument('--db', nargs='+', default=[], help='sqlite3 database to write to')
+    db_grp.add_argument('--db', nargs='+', default=[],
+                        help='sqlite3 database to write to')
     db_grp.add_argument('--db_dir', nargs='+', default=[],
                         help=f'Paths to directory where to search for DB files. File\'s name have to end with "{file_end}"')
 
 
 # Add basic arguments to manage SQL timestamp to a parser
 def parser_add_sql_args(parser):
-    parser.add_argument('--start', type=str, help='Start timestamp, format: YYYY-MM-DD HH:MM:SS')
-    parser.add_argument('--end', type=str, help='End timestamp, format: YYYY-MM-DD HH:MM:SS')
+    parser.add_argument('--start', type=str,
+                        help='Start timestamp, format: YYYY-MM-DD HH:MM:SS')
+    parser.add_argument('--end', type=str,
+                        help='End timestamp, format: YYYY-MM-DD HH:MM:SS')
 
 
 # Add basic arguments to manage matplotlib to a parser
 def parser_add_matplotlib_args(parser, default_line_style='None', default_color=None):
-    parser.add_argument('--no_fill', help='Do not fill the area under the line', action='store_true')
-    parser.add_argument('--line_style', help='Choose a custom line style', default=default_line_style)
+    parser.add_argument(
+        '--no_fill', help='Do not fill the area under the line', action='store_true')
+    parser.add_argument(
+        '--line_style', help='Choose a custom line style', default=default_line_style)
     parser.add_argument('--marker', help='Choose a custom marker')
-    parser.add_argument('--color', help='Choose a custom color', default=default_color)
-    parser.add_argument('--no_grid', help='Do not show the grid', action='store_true')
+    parser.add_argument(
+        '--color', help='Choose a custom color', default=default_color)
+    parser.add_argument(
+        '--no_grid', help='Do not show the grid', action='store_true')
 
 
 # Add basic arguments to manage time and h24
 def parser_add_time_args(parser):
     time_grp = parser.add_mutually_exclusive_group()
-    time_grp.add_argument('--time', action='store_true', help='Show time on x axis')
-    time_grp.add_argument('--h24', action='store_true', help='Compare dbs in 24h period starting from midnight')
+    time_grp.add_argument('--time', action='store_true',
+                          help='Show time on x axis')
+    time_grp.add_argument('--h24', action='store_true',
+                          help='Compare dbs in 24h period starting from midnight')
 
 
 # Get basic default parser
@@ -112,7 +122,8 @@ def get_basic_parser(desc, file_end, default_color=None):
 
 # Add basic arguments to manage the pandas
 def parser_add_pandas_args(parser):
-    parser.add_argument('--grp_freq', help='Frequency to group data', default='1s')
+    parser.add_argument(
+        '--grp_freq', help='Frequency to group data', default='1s')
 
 
 # Check ends with proper file end
@@ -142,10 +153,12 @@ def check_db_files_exist(db_paths):
 def validate_args(args):
     len_dbs = len(args.db)
     if len_dbs > 1 and args.time:
-        raise argparse.ArgumentTypeError('Cannot use --time with more than one DB file, use --h24 instead')
+        raise argparse.ArgumentTypeError(
+            'Cannot use --time with more than one DB file, use --h24 instead')
 
     if args.h24 and len_dbs < 2:
-        raise argparse.ArgumentTypeError('Cannot use --h24 with less than two DB files')
+        raise argparse.ArgumentTypeError(
+            'Cannot use --h24 with less than two DB files')
 
 
 # Choose the right SQL query to execute
@@ -176,7 +189,8 @@ def choose_sql_query(start, end, fields, table, where_data=None, h24=False):
 # Get data from a db
 def get_data_from_db(db_path, start, end, fields, table, where_data=None, h24=False):
     with sqlite3.connect(db_path) as conn:
-        sql_query, sql_args = choose_sql_query(start, end, fields, table, where_data, h24)
+        sql_query, sql_args = choose_sql_query(
+            start, end, fields, table, where_data, h24)
         return conn.execute(sql_query, sql_args).fetchall()
 
 
@@ -226,7 +240,8 @@ def plot_data_from_dataset(dataset, plot_f, fields, ax, time=False, no_fill=Fals
     else:
         plot_data[0] = range(1, len(plot_data[1]) + 1)
 
-    plot_f(*plot_data, label=dataset['label'], linestyle=line_style, color=color, marker=marker)
+    plot_f(*plot_data, label=dataset['label'],
+           linestyle=line_style, color=color, marker=marker)
     if not no_fill:
         if color:
             ax.fill_between(*plot_data, color=color, alpha=0.3)
@@ -262,7 +277,8 @@ def plot_data_from_datasets(plt, plot_f, w_title, datasets, fields, y_label, x_l
             x_label = 'Time (HH:MM:SS)'
         else:
             x_label = f'Scale time (1:{grp_freq})'
-    set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend, no_grid, True, plt, time or h24)
+    set_fig_ax(fig, ax, title, x_label, y_label, w_title,
+               legend, no_grid, True, plt, time or h24)
 
 
 # Calculate the correlation between two fields in a merged data frame
@@ -275,7 +291,8 @@ def get_correlation_dataframe(df_merge, field0, field1):
 
     r = 0
     for i in range(n):
-        r += (df_merge[field0][i] - field0_mean) * (df_merge[field1][i] - field1_mean)
+        r += (df_merge[field0][i] - field0_mean) * \
+            (df_merge[field1][i] - field1_mean)
     r = r / ((n - 1) * s_field0 * s_field1)
 
     return f'{r:.3f}'

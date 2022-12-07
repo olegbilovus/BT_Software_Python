@@ -1,24 +1,26 @@
+from Utility import sharedUtils
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import matplotlib
 import os
 import sys
 
 _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(_path_parent)
 
-import matplotlib
 
 matplotlib.use('Qt5Agg')
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
 
-from Utility import sharedUtils
 
 # Parse config file
 file_end, fields, table_name, where_data = sharedUtils.get_config_from_file(os.path.join(_path_parent, 'config.ini'),
                                                                             'NETWORK')
 
 # Parse command line arguments
-parser = sharedUtils.get_basic_parser('Plot the stats from a SQL file generated with ipPacketsToStatsSQL.py', file_end)
-parser.add_argument('--bytes', help='Show bytes sum on y axis. Default is packets count', action='store_true')
+parser = sharedUtils.get_basic_parser(
+    'Plot the stats from a SQL file generated with ipPacketsToStatsSQL.py', file_end)
+parser.add_argument(
+    '--bytes', help='Show bytes sum on y axis. Default is packets count', action='store_true')
 args = parser.parse_args()
 
 # Get the DB files
@@ -32,11 +34,14 @@ sharedUtils.validate_args(args)
 # Create the datasets
 datasets = []
 for db_path in args.db:
-    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, table_name, where_data, args.h24)
+    data = sharedUtils.get_data_from_db(
+        db_path, args.start, args.end, fields, table_name, where_data, args.h24)
 
     if data:
-        data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)
-        df = sharedUtils.get_data_frame_from_data(data, fields, grp_freq=args.grp_freq)
+        data = data if not args.h24 else sharedUtils.data_start_from_midnight(
+            data)
+        df = sharedUtils.get_data_frame_from_data(
+            data, fields, grp_freq=args.grp_freq)
 
         if args.bytes:
             df = df.sum()
