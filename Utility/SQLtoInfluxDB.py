@@ -61,9 +61,9 @@ for table in tqdm(tables, unit='tables', desc='Processing tables'):
         if argparse.now:
             ts = set_same_date(ts, year=today.year, month=today.month, day=today.day - 1)
         point.time(datetime.fromisoformat(ts))
-        for i in range(len(columns)):
+        for i, item in enumerate(columns):
             if i != ts_index:
-                point.field(columns[i][1], row[i])
+                point.field(item[1], row[i])
         write_api.write(argparse.bucket, argparse.org, point)
 
 # Close connections
