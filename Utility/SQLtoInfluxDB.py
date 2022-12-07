@@ -4,6 +4,7 @@ from datetime import datetime
 
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+import sys
 from tqdm import tqdm
 
 from sharedUtils import set_same_date
@@ -47,7 +48,7 @@ for table in tqdm(tables, unit='tables', desc='Processing tables'):
             break
     if ts_index is None:
         print('No timestamp column found in table ' + table_name)
-        exit(1)
+        sys.exit(1)
 
     # Get data
     c.execute("SELECT * FROM " + table_name)
