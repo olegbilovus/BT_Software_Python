@@ -4,18 +4,16 @@ import scapy.all as scapy
 def get_protocol_and_ports(transport):
     if transport.haslayer(scapy.TCP):
         return 'TCP', transport.sport, transport.dport
-    elif transport.haslayer(scapy.UDP):
+    if transport.haslayer(scapy.UDP):
         return 'UDP', transport.sport, transport.dport
-    elif transport.haslayer(scapy.ICMP):
+    if transport.haslayer(scapy.ICMP):
         return 'ICMP', None, None
-    else:
-        return 'Other', None, None
+    return 'Other', None, None
 
 
 def get_ip_layer(pkt):
     if pkt.haslayer(scapy.IP):
         return scapy.IP
-    elif pkt.haslayer(scapy.IPv6):
+    if pkt.haslayer(scapy.IPv6):
         return scapy.IPv6
-    else:
-        return None
+    return None
