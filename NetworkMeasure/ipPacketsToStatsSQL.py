@@ -41,7 +41,7 @@ if args.db_reset:
 # Create the table if it doesn't exist
 try:
     c.execute(
-        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT)')
+        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT, flags INT)')
 except sqlite3.OperationalError:
     pass
 
@@ -49,7 +49,7 @@ except sqlite3.OperationalError:
 pcap = scapy.PcapReader(args.pcap)
 
 # Print the headers if verbose
-VERBOSE_HEADERS = '[No] [Timestamp] Src[SrcPort] -> Dst[DstPort] [Protocol] [Length]'
+VERBOSE_HEADERS = '[No] [Timestamp] Src[SrcPort] -> Dst[DstPort] [Protocol] [Length] [Flags]'
 if args.verbose:
     print(VERBOSE_HEADERS)
 
@@ -66,16 +66,18 @@ for i, pkt in iterator:
         ip = pkt[ip_type]
         transport = ip.payload
         protocol, sport, dport = utils.get_protocol_and_ports(transport)
-        ts = datetime.utcfromtimestamp(float(pkt.time)).isoformat().replace('T', ' ')
+        ts = datetime.utcfromtimestamp(float(pkt.time)).isoformat()
+
         src = ip.src
         dst = ip.dst
         length = len(pkt)
+        flags = transport.flags.value if protocol == 'TCP' else None
 
-        c.execute('INSERT INTO pcap_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                  (i, ts, src, sport, dst, dport, protocol, length))
+        c.execute('INSERT INTO pcap_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                  (i, ts, src, sport, dst, dport, protocol, length, flags))
 
         if args.verbose:
-            print(f'[#{i}] [{ts}] {src}[{sport}] -> {dst}[{dport}] {protocol} {length}')
+            print(f'[#{i}] [{ts}] {src}[{sport}] -> {dst}[{dport}] {protocol} {length} {flags}')
     else:
         skipped += 1
 
