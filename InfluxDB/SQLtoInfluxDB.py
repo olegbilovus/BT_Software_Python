@@ -31,7 +31,8 @@ parser.add_argument('-u', '--url', help='InfluxDB URL. Default from config.ini')
 parser.add_argument('-t', '--token', help='InfluxDB token', required=True)
 parser.add_argument('-o', '--org', help='InfluxDB organization', required=True)
 parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
-parser.add_argument('--threads', help='Number of threads to use', type=int, default=6)
+parser.add_argument('--threads', help='Number of threads to use for each job. If specify x threads, 2*x will be used.',
+                    type=int, default=3)
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
@@ -132,7 +133,7 @@ def worker_network(jobs, results):
 p_jobs = queue.Queue()
 n_jobs = queue.Queue()
 threads = []
-for _ in range(args.threads // 2):
+for _ in range(args.threads):
     p_t = threading.Thread(target=worker_power, args=(p_jobs,), daemon=True)
     p_t.start()
     threads.append(p_t)
