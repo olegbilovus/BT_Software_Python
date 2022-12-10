@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 from Utility import sharedUtils
 
 # Parse config file
-file_end, fields, table_name, where_data = sharedUtils.get_config_from_file(os.path.join(_path_parent, 'config.ini'),
-                                                                            'NETWORK')
+config_path = os.path.join(_path_parent, 'config.ini')
+file_end = sharedUtils.get_file_end_from_config(config_path)
+fields, table_name, where_data = sharedUtils.get_config_from_file(config_path, 'NETWORK')
 
 # Parse command line arguments
 parser = sharedUtils.get_basic_parser('Plot the stats from a SQL file generated with ipPacketsToStatsSQL.py', file_end)
