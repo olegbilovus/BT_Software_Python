@@ -7,7 +7,7 @@ import geoip2.errors
 class GeoIP2:
     def __init__(self, path):
         self.reader = geoip2.database.Reader(os.path.join(path, 'GeoLite2-City.mmdb'))
-        self.not_found = set()
+        self.not_found_ips = set()
 
     def get_relevant_data(self, ip):
         try:
@@ -17,5 +17,5 @@ class GeoIP2:
                 'lon': response.location.longitude
             }
         except geoip2.errors.AddressNotFoundError:
-            self.not_found.add(ip)
+            self.not_found_ips.add(ip)
             return None

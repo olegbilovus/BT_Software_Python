@@ -12,6 +12,8 @@ from tqdm import tqdm
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 import utils
+import threading
+import queue
 
 from Utility import sharedUtils
 
@@ -29,6 +31,7 @@ parser.add_argument('-u', '--url', help='InfluxDB URL. Default from config.ini')
 parser.add_argument('-t', '--token', help='InfluxDB token', required=True)
 parser.add_argument('-o', '--org', help='InfluxDB organization', required=True)
 parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
+parser.add_argument('--threads', help='Number of threads to use', type=int, default=6)
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
@@ -91,32 +94,63 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 
 starting_points = []
 
-# Write data to InfluxDB
-for dataset in tqdm(datasets, unit='dataset', desc='Processing datasets'):
-    # Power
-    for data in tqdm(dataset['p_data'], unit='power_data', desc=f'Processing {dataset["label"]} power data'):
-        point = Point(p_measurement).tag('label', dataset['label'])
-        for i, column in enumerate(dataset['p_columns']):
-            if i != dataset['p_ts_index']:
-                point = point.field(column[1], data[i])
-        point = point.time(datetime.fromisoformat(data[dataset['p_ts_index']]))
-        write_api.write(bucket, args.org, point)
-    # Network
-    for data in tqdm(dataset['n_data'], unit='network_data', desc=f'Processing {dataset["label"]} network data'):
-        point = Point(n_measurement).tag('label', dataset['label'])
-        for i, column in enumerate(dataset['n_columns']):
-            if i != dataset['n_ts_index']:
-                point = point.field(column[1], data[i])
-        point = point.time(datetime.fromisoformat(data[dataset['n_ts_index']]))
-        if geoIP:
-            geo_data = geoIP.get_relevant_data(data[dataset['n_dst_index']])
-            if geo_data:
-                point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
-        write_api.write(bucket, args.org, point)
 
-    starting_points.append((dataset['label'], dataset['p_data'][0][dataset['p_ts_index']]))
+def worker_power(jobs):
+    while True:
+        dataset = jobs.get()
+        for data in tqdm(dataset['p_data'], unit='power_data', desc=f'Processing {dataset["label"]} power data'):
+            point = Point(p_measurement).tag('label', dataset['label'])
+            for i, column in enumerate(dataset['p_columns']):
+                if i != dataset['p_ts_index']:
+                    point = point.field(column[1], data[i])
+            point = point.time(datetime.fromisoformat(data[dataset['p_ts_index']]))
+            write_api.write(bucket, args.org, point)
+
+        jobs.task_done()
+
+
+def worker_network(jobs, results):
+    while True:
+        dataset = jobs.get()
+        for data in tqdm(dataset['n_data'], unit='network_data', desc=f'Processing {dataset["label"]} network data'):
+            point = Point(n_measurement).tag('label', dataset['label'])
+            for i, column in enumerate(dataset['n_columns']):
+                if i != dataset['n_ts_index']:
+                    point = point.field(column[1], data[i])
+            point = point.time(datetime.fromisoformat(data[dataset['n_ts_index']]))
+            if geoIP:
+                geo_data = geoIP.get_relevant_data(data[dataset['n_dst_index']])
+                if geo_data:
+                    point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
+            write_api.write(bucket, args.org, point)
+
+        jobs.task_done()
+        starting_points.append((dataset['label'], dataset['p_data'][0][dataset['p_ts_index']]))
+
+
+# Write data to InfluxDB
+p_jobs = queue.Queue()
+n_jobs = queue.Queue()
+threads = []
+for _ in range(args.threads // 2):
+    p_t = threading.Thread(target=worker_power, args=(p_jobs,), daemon=True)
+    p_t.start()
+    threads.append(p_t)
+    n_t = threading.Thread(target=worker_network, args=(n_jobs, starting_points), daemon=True)
+    n_t.start()
+    threads.append(n_t)
+
+for ds in datasets:
+    p_jobs.put(ds)
+    n_jobs.put(ds)
+
+p_jobs.join()
+n_jobs.join()
 
 write_api.close()
 client.close()
-
-print(starting_points)
+print('\n' * args.threads)
+print(f'Not found IPs for GeoIP: {geoIP.not_found_ips}')
+print(f'Starting points:')
+for sp in starting_points:
+    print(f'{sp[0]}: {sp[1]}')
