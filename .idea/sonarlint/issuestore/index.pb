@@ -18,8 +18,6 @@ G.idea/sonarlint/issuestore/3/0/3089ae6507cfe6f9b212cf336968bea07c8f5f38,e\c\ec
 w
 G.idea/sonarlint/issuestore/7/c/7c0b77d73fbdeaf914efa3f2eff353c0269690b1,d\2\d2b417ddd451f2cd73cc478204db3d4afbdeccdb
 w
-G.idea/sonarlint/issuestore/9/f/9fe84ebb15faf917b7def6236dba604453cc61e0,f\0\f0e0f9cec86fe4b939ae22be5264c758801eb28f
-w
 G.idea/sonarlint/issuestore/1/8/18214068b58c1008534ca39a211bf932cd4ed0b3,9\7\97659ba70f40d964d0787601c3b4f52b095cac82
 w
 G.idea/sonarlint/issuestore/b/6/b6832815eade23283e4fdef5dd7f2e8b4cda6e6e,7\7\772b3e30db90867f6f82592532c4aaffdd55b00d
@@ -27,3 +25,18 @@ I
 NetworkMeasure/.gitignore,e\5\e59be358a8e4b313b77b4ab0e70d4d668611a981
 G
 NetworkMeasure/utils.py,d\8\d806d809e6fc4a2b9f54ce8d4937514714bef121
+I
+InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
+V
+&PowerMeasure/powerChartsLineFromSQL.py,b\3\b35d217c70fd5b35bb1def0ed0f9ea1b804fc05f
+:
+
+config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
+Z
+*NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
+w
+G.idea/sonarlint/issuestore/d/8/d806d809e6fc4a2b9f54ce8d4937514714bef121,8\4\84474093bd22598474408de041d344af78894711
+I
+InfluxDB/script_on_all.py,1\4\14b179f2e8e3814c67dc8e0c09ce94ece23f389e
+w
+G.idea/sonarlint/issuestore/e/5/e59be358a8e4b313b77b4ab0e70d4d668611a981,4\8\480e314dd29c416db722cfa0bf4a6eac4075ad1f

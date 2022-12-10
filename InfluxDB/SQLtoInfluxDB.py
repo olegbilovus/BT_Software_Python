@@ -125,8 +125,8 @@ def worker_network(jobs):
                     point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
             write_api.write(bucket, args.org, point)
 
-        jobs.task_done()
         starting_points.append((dataset['label'], dataset['p_data'][0][dataset['p_ts_index']]))
+        jobs.task_done()
 
 
 # Write data to InfluxDB
@@ -137,7 +137,7 @@ for _ in range(args.threads):
     p_t = threading.Thread(target=worker_power, args=(p_jobs,), daemon=True)
     p_t.start()
     threads.append(p_t)
-    n_t = threading.Thread(target=worker_network, args=(n_jobs, starting_points), daemon=True)
+    n_t = threading.Thread(target=worker_network, args=(n_jobs,), daemon=True)
     n_t.start()
     threads.append(n_t)
 
@@ -150,7 +150,8 @@ n_jobs.join()
 
 write_api.close()
 client.close()
-print('\n' * args.threads)
+
+print('\n' * (args.threads * 2))
 print(f'Not found IPs for GeoIP: {geoIP.not_found_ips}')
 print('Starting points:')
 for sp in starting_points:
