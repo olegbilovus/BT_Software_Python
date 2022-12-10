@@ -110,7 +110,7 @@ def worker_power(jobs):
         jobs.task_done()
 
 
-def worker_network(jobs, results):
+def worker_network(jobs):
     while True:
         dataset = jobs.get()
         for data in tqdm(dataset['n_data'], unit='network_data', desc=f'Processing {dataset["label"]} network data'):
@@ -152,6 +152,6 @@ write_api.close()
 client.close()
 print('\n' * args.threads)
 print(f'Not found IPs for GeoIP: {geoIP.not_found_ips}')
-print(f'Starting points:')
+print('Starting points:')
 for sp in starting_points:
     print(f'{sp[0]}: {sp[1]}')

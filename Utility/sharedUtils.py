@@ -197,7 +197,7 @@ def choose_sql_query(fields, table, start=None, end=None, where_data=None, h24=F
 # Get data from a db
 def get_data_from_db(db_path, fields, table, start=None, end=None, where_data=None, h24=False):
     with sqlite3.connect(db_path) as conn:
-        sql_query, sql_args = choose_sql_query(start, end, fields, table, where_data, h24)
+        sql_query, sql_args = choose_sql_query(fields, table, start, end, where_data, h24)
         return conn.execute(sql_query, sql_args).fetchall()
 
 
