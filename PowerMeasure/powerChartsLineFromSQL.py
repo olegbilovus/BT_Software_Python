@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 from Utility import sharedUtils
 
 # Parse config file
-file_end, fields, table_name, where_data = sharedUtils.get_config_from_file(os.path.join(_path_parent, 'config.ini'),
-                                                                            'POWER')
+config_path = os.path.join(_path_parent, 'config.ini')
+file_end = sharedUtils.get_file_end_from_config(config_path)
+fields, table_name, where_data = sharedUtils.get_config_from_file(config_path, 'POWER')
 
 # Parse command line arguments
 parser = sharedUtils.get_basic_parser('Plot power data from SQL', file_end, default_color='green')

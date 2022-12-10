@@ -53,12 +53,34 @@ def get_time_from_timestamp(timestamp):
     return datetime.fromisoformat(timestamp).time().isoformat()
 
 
+# Get file end from config file
+def get_file_end_from_config(config_file):
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config['COMMON']['file_end']
+
+
 # Get basic config variables from a file
 def get_config_from_file(config_file, section):
     config = configparser.ConfigParser()
     config.read(config_file)
     section = config[section]
-    return config['COMMON']['file_end'], section['fields'].split(' '), section['table_name'], section['where_data']
+    return section['fields'].split(' '), section['table_name'], section['where_data']
+
+
+# Get the Influxdb basic config variables from a file
+def get_config_influxdb_from_file(config_file):
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    s_influxdb = config['INFLUXDB_V2']
+    return s_influxdb['url'], s_influxdb['bucket'], config['POWER']['_measurement'], config['NETWORK']['_measurement']
+
+
+# Get single value from config file
+def get_single_value_from_config(config_file, section, key):
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config[section][key]
 
 
 # Add basic arguments to manage the db to a parser
@@ -150,7 +172,7 @@ def validate_args(args):
 
 # Choose the right SQL query to execute
 # "where data" should be a string with the SQL data of conditions
-def choose_sql_query(start, end, fields, table, where_data=None, h24=False):
+def choose_sql_query(fields, table, start=None, end=None, where_data=None, h24=False):
     if h24 and (start or end):
         fields_0 = f'time({fields[0]})'
     else:
@@ -173,9 +195,9 @@ def choose_sql_query(start, end, fields, table, where_data=None, h24=False):
 
 
 # Get data from a db
-def get_data_from_db(db_path, start, end, fields, table, where_data=None, h24=False):
+def get_data_from_db(db_path, fields, table, start=None, end=None, where_data=None, h24=False):
     with sqlite3.connect(db_path) as conn:
-        sql_query, sql_args = choose_sql_query(start, end, fields, table, where_data, h24)
+        sql_query, sql_args = choose_sql_query(fields, table, start, end, where_data, h24)
         return conn.execute(sql_query, sql_args).fetchall()
 
 
@@ -278,3 +300,28 @@ def get_correlation_dataframe(df_merge, field0, field1):
     r = r / ((n - 1) * s_field0 * s_field1)
 
     return f'{r:.3f}'
+
+
+# Get columns object from a db (index, name, type, notnull, default_value, primary_key)
+def get_db_table_columns_obj(db_path, table_name, conn=None):
+    if not conn:
+        conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute(f'PRAGMA table_info({table_name})')
+    return c.fetchall()
+
+
+# Get column index of the TIMESTAMP field
+def get_timestamp_column_index(columns):
+    for i, column in enumerate(columns):
+        if column[2] == 'TIMESTAMP':
+            return i
+    return -1
+
+
+# Get index of a column name from columns object
+def get_column_index(columns, column_name):
+    for i, column in enumerate(columns):
+        if column[1] == column_name:
+            return i
+    return -1

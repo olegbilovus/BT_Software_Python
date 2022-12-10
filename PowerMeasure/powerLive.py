@@ -96,8 +96,10 @@ class PowerLive:
         self.verbose = verbose
         self.captures_limit = captures_limit
         self.captures = 0
-        self.file_end, self.fields, self.table_name, _ = sharedUtils.get_config_from_file(
-            os.path.join(_path_parent, 'config.ini'), 'POWER')
+
+        config_path = os.path.join(_path_parent, 'config.ini')
+        self.file_end = sharedUtils.get_file_end_from_config(config_path)
+        self.fields, self.table_name, _ = sharedUtils.get_config_from_file(config_path, 'POWER')
 
         self.db_name = db_name if sharedUtils.check_file_end(db_name, self.file_end) else db_name + self.file_end
         self.conn = sqlite3.connect(self.db_name, check_same_thread=False)
