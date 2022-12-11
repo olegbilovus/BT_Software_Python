@@ -17,7 +17,7 @@ for file in os.listdir(dir_name):
         pcap_loc = os.path.join(dir_name, pcap_name)
         cmd = f'py {script_loc} --pcap {pcap_loc} --db {db_loc} --db_reset'
         print(cmd)
-        t = threading.Thread(target=subprocess.call, args=(cmd,), daemon=True)
+        t = threading.Thread(target=subprocess.run, args=(cmd,), daemon=True)
         threads.append(t)
         t.start()
 
