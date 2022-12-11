@@ -42,7 +42,7 @@ if args.db_reset:
 # Create the table if it doesn't exist
 try:
     c.execute(
-        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT, flags INT)')
+        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT, flags TEXT)')
 except sqlite3.OperationalError:
     pass
 
@@ -72,7 +72,7 @@ for i, pkt in iterator:
         src = ip.src
         dst = ip.dst
         length = len(pkt)
-        flags = transport.flags.value if protocol == 'TCP' else None
+        flags = str(transport.flags) if protocol == 'TCP' else None
 
         c.execute('INSERT INTO pcap_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                   (i, ts, src, sport, dst, dport, protocol, length, flags))
