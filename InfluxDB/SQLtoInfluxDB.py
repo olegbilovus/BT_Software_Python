@@ -122,7 +122,8 @@ def worker_network(jobs):
             if geoIP:
                 geo_data = geoIP.get_relevant_data(data[dataset['n_dst_index']])
                 if geo_data:
-                    point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
+                    point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon']).field('country',
+                                                                                                    geo_data['country'])
             write_api.write(bucket, args.org, point)
 
         starting_points.append((dataset['label'], dataset['p_data'][0][dataset['p_ts_index']]))
