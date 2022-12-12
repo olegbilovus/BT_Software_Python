@@ -6,18 +6,17 @@ sys.path.append(_path_parent)
 
 import matplotlib
 
-matplotlib.use('Qt5Agg')
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from Utility import sharedUtils
 
 # Parse config file
-file_end, power_fields, power_table_name, power_where_data = sharedUtils.get_config_from_file(
-    os.path.join(_path_parent, 'config.ini'), 'POWER')
-_, pkt_fields, pkt_table_name, pkt_where_data = sharedUtils.get_config_from_file(
-    os.path.join(_path_parent, 'config.ini'), 'NETWORK')
+config_path = os.path.join(_path_parent, 'config.ini')
+sharedUtils.set_matplotlib_backend(matplotlib, config_path)
+file_end = sharedUtils.get_file_end_from_config(config_path)
+power_fields, power_table_name, power_where_data = sharedUtils.get_chart_config_from_file(config_path, 'POWER')
+pkt_fields, pkt_table_name, pkt_where_data = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK')
 fields = [power_fields[1], pkt_fields[1]]
 
 # Parse command line arguments
@@ -39,9 +38,9 @@ else:
 # Create the datasets
 datasets = []
 for db_path in args.db:
-    power_data = sharedUtils.get_data_from_db(db_path, args.start, args.end, power_fields, power_table_name,
+    power_data = sharedUtils.get_data_from_db(db_path, power_fields, power_table_name, args.start, args.end,
                                               power_where_data, args.h24)
-    pkt_data = sharedUtils.get_data_from_db(db_path, args.start, args.end, pkt_fields, pkt_table_name, pkt_where_data,
+    pkt_data = sharedUtils.get_data_from_db(db_path, pkt_fields, pkt_table_name, args.start, args.end, pkt_where_data,
                                             args.h24)
 
     if power_data and pkt_data:

@@ -14,13 +14,14 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 import matplotlib
-
-matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import requests
 from matplotlib.animation import FuncAnimation
 
 from Utility import sharedUtils
+
+config_path = os.path.join(_path_parent, 'config.ini')
+sharedUtils.set_matplotlib_backend(matplotlib, config_path)
 
 
 class Plug(ABC):
@@ -97,9 +98,8 @@ class PowerLive:
         self.captures_limit = captures_limit
         self.captures = 0
 
-        config_path = os.path.join(_path_parent, 'config.ini')
         self.file_end = sharedUtils.get_file_end_from_config(config_path)
-        self.fields, self.table_name, _ = sharedUtils.get_config_from_file(config_path, 'POWER')
+        self.fields, self.table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'POWER')
 
         self.db_name = db_name if sharedUtils.check_file_end(db_name, self.file_end) else db_name + self.file_end
         self.conn = sqlite3.connect(self.db_name, check_same_thread=False)
@@ -142,6 +142,9 @@ class PowerLive:
             for _ in range(n_threads):
                 threading.Thread(target=self.update, args=(start,), daemon=True).start()
             self.ani = FuncAnimation(self.fig, start.put, interval=interval)
+
+            fig_manager = plt.get_current_fig_manager()
+            fig_manager.set_window_title(sharedUtils.get_file_name_from_path(self.db_name))
 
             plt.show()
         else:

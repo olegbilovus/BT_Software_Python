@@ -1,0 +1,8 @@
+matplotlib
+PyQt5
+scapy
+pandas
+tqdm
+influxdb-client
+geoip2
+requests

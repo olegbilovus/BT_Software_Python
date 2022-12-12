@@ -17,7 +17,7 @@ from Utility import sharedUtils
 # Parse config file
 config_path = os.path.join(_path_parent, 'config.ini')
 file_end = sharedUtils.get_file_end_from_config(config_path)
-_, table_name, _ = sharedUtils.get_config_from_file(config_path, 'NETWORK')
+_, table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK')
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(
