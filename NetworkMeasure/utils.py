@@ -2,13 +2,11 @@ import scapy.all as scapy
 
 
 def get_protocol_and_ports(transport):
-    if transport.haslayer(scapy.TCP):
-        return 'TCP', transport.sport, transport.dport
-    if transport.haslayer(scapy.UDP):
-        return 'UDP', transport.sport, transport.dport
-    if transport.haslayer(scapy.ICMP):
-        return 'ICMP', None, None
-    return 'Other', None, None
+    name = transport.name
+    sport = transport.sport if hasattr(transport, 'sport') else None
+    dport = transport.dport if hasattr(transport, 'dport') else None
+
+    return name, sport, dport
 
 
 def get_ip_layer(pkt):
