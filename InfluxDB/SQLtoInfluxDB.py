@@ -39,10 +39,7 @@ args = parser.parse_args()
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
 url = args.url if args.url else url
 
-if args.geoIP:
-    geoIP = utils.GeoIP2(args.geoIP)
-else:
-    geoIP = None
+ip_utils = utils.IPUtils(args.geoIP)
 
 # Get the DB files
 if args.db_dir:
@@ -128,11 +125,12 @@ def worker_network(jobs):
                 if i != dataset['n_ts_index']:
                     point = point.field(column[1], data[i])
             point = point.time(datetime.fromisoformat(data[dataset['n_ts_index']]))
-            if geoIP:
-                geo_data = geoIP.get_relevant_data(data[dataset['n_dst_index']])
+            if args.geoIP:
+                geo_data = ip_utils.get_relevant_geoip_data(data[dataset['n_dst_index']])
                 if geo_data:
-                    point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon']).field('country',
-                                                                                                    geo_data['country'])
+                    point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
+                    point = point.field('country', geo_data['country'])
+            point = point.field('hostname', ip_utils.get_hostname_from_ip(data[dataset['n_dst_index']]))
             write_api.write(bucket, args.org, point)
 
         jobs.task_done()
@@ -169,4 +167,5 @@ write_api.close()
 client.close()
 
 print('\n' * (args.threads * 2))
-print(f'Not found IPs for GeoIP: {geoIP.not_found_ips}')
+print(f'Not found IPs for GeoIP: {ip_utils.geoip2.not_found_ips}')
+print(f'Number of hostnames: {len(ip_utils.hostname_ips_known)}')
