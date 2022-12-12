@@ -30,10 +30,12 @@ class IPUtils:
 
     def __init__(self, geoip_path=None, lock=True):
         if lock:
-            self._geo_lock = threading.Lock()
-            self.lock(self.get_relevant_geoip_data, '_geo_lock')
-            self._hostname_lock = threading.Lock()
-            self.lock(self.get_hostname_from_ip, '_hostname_lock')
+            self._geo_lock_name = 'geo_lock'
+            setattr(self, self._geo_lock_name, threading.Lock())
+            self.lock(self.get_relevant_geoip_data, self._geo_lock_name)
+            self._hostname_lock_name = 'hostname_lock'
+            setattr(self, self._hostname_lock_name, threading.Lock())
+            self.lock(self.get_hostname_from_ip, self._hostname_lock_name)
         else:
             self._geo_lock = self._hostname_lock = None
         self.geo_ips_known = {}
