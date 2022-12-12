@@ -23,10 +23,6 @@ w
 G.idea/sonarlint/issuestore/b/6/b6832815eade23283e4fdef5dd7f2e8b4cda6e6e,7\7\772b3e30db90867f6f82592532c4aaffdd55b00d
 I
 NetworkMeasure/.gitignore,e\5\e59be358a8e4b313b77b4ab0e70d4d668611a981
-G
-NetworkMeasure/utils.py,d\8\d806d809e6fc4a2b9f54ce8d4937514714bef121
-I
-InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
 V
 &PowerMeasure/powerChartsLineFromSQL.py,b\3\b35d217c70fd5b35bb1def0ed0f9ea1b804fc05f
 :
