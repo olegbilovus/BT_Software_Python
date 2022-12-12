@@ -25,6 +25,8 @@ _, p_table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'POWER'
 _, n_table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK')
 n_dst_field = sharedUtils.get_single_value_from_config(config_path, 'NETWORK', 'dst_field')
 
+max_data_per_thread = sharedUtils.get_single_value_from_config(config_path, 'COMMON', 'max_data_per_thread', t=int)
+
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='SQLite DB of power and network to InfluxDB')
 sharedUtils.parser_add_db_dir_args(parser, file_end)
@@ -34,12 +36,17 @@ parser.add_argument('-o', '--org', help='InfluxDB organization', required=True)
 parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
 parser.add_argument('--threads', help='Number of threads to use for each job. If specify x threads, 2*x will be used.',
                     type=int, default=3)
+parser.add_argument('--no_lock',
+                    help='Do not use lock on thread. It may give better performance, but it may lose data or write incorrect data',
+                    action='store_true')
+parser.add_argument('--no_chunk', help='Do not split data into chunks when processing. It may improve the performance',
+                    action='store_true')
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
 url = args.url if args.url else url
 
-ip_utils = utils.IPUtils(args.geoIP)
+ip_utils = utils.IPUtils(args.geoIP, not args.no_lock)
 
 # Get the DB files
 if args.db_dir:
@@ -104,8 +111,9 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 
 def worker_power(jobs):
     while jobs.qsize() > 0:
-        dataset = jobs.get()
-        for data in tqdm(dataset['p_data'], unit='power_data', desc=f'Processing {dataset["label"]} power data'):
+        dataset, chunk_number, total_chunks = jobs.get()
+        for data in tqdm(dataset['p_data'], unit='power_data',
+                         desc=f'{dataset["label"]} power data [{chunk_number}/{total_chunks}]'):
             point = Point(p_measurement).tag('label', dataset['label'])
             for i, column in enumerate(dataset['p_columns']):
                 if i != dataset['p_ts_index']:
@@ -118,8 +126,9 @@ def worker_power(jobs):
 
 def worker_network(jobs):
     while jobs.qsize() > 0:
-        dataset = jobs.get()
-        for data in tqdm(dataset['n_data'], unit='network_data', desc=f'Processing {dataset["label"]} network data'):
+        dataset, chunk_number, total_chunks = jobs.get()
+        for data in tqdm(dataset['n_data'], unit='network_data',
+                         desc=f'{dataset["label"]} network data [{chunk_number}/{total_chunks}]'):
             point = Point(n_measurement).tag('label', dataset['label'])
             for i, column in enumerate(dataset['n_columns']):
                 if i != dataset['n_ts_index']:
@@ -136,15 +145,20 @@ def worker_network(jobs):
         jobs.task_done()
 
 
-# Write data to InfluxDB
+# Prepare jobs
 p_jobs = queue.Queue()
 n_jobs = queue.Queue()
-for ds in datasets:
-    if ds['p_data']:
-        p_jobs.put(ds)
-    if ds['n_data']:
-        n_jobs.put(ds)
+for _dataset in datasets:
+    ds_chunks = utils.split_dataset_in_chunks(_dataset, max_data_per_thread) if not args.no_chunk else [_dataset]
+    len_ds_chunks = len(ds_chunks)
+    for i, ds in enumerate(ds_chunks):
+        ds_to_add = (ds, i + 1, len_ds_chunks)
+        if ds['p_data']:
+            p_jobs.put(ds_to_add)
+        if ds['n_data']:
+            n_jobs.put(ds_to_add)
 
+# Start threads
 threads = []
 for _ in range(args.threads):
     p_t = threading.Thread(target=worker_power, args=(p_jobs,), daemon=True)
@@ -154,6 +168,7 @@ for _ in range(args.threads):
     n_t.start()
     threads.append(n_t)
 
+# Wait for all jobs to be done
 done = False
 while not done:
     for t in threads:
@@ -161,7 +176,7 @@ while not done:
             time.sleep(1)
             break
     else:
-        done = True
+        done = p_jobs.empty() and n_jobs.empty()
 
 write_api.close()
 client.close()

@@ -82,10 +82,11 @@ def get_config_influxdb_from_file(config_file):
 
 
 # Get single value from config file
-def get_single_value_from_config(config_file, section, key):
+def get_single_value_from_config(config_file, section, key, t=None):
     config = configparser.ConfigParser()
     config.read(config_file)
-    return config[section][key]
+    value = config[section][key] if t is None else t(config[section][key])
+    return value
 
 
 # Add basic arguments to manage the db to a parser
