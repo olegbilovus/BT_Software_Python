@@ -21,8 +21,8 @@ from Utility import sharedUtils
 # Parse config file
 config_path = os.path.join(_path_parent, 'config.ini')
 file_end = sharedUtils.get_file_end_from_config(config_path)
-_, p_table_name, _ = sharedUtils.get_config_from_file(config_path, 'POWER')
-_, n_table_name, _ = sharedUtils.get_config_from_file(config_path, 'NETWORK')
+_, p_table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'POWER')
+_, n_table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK')
 n_dst_field = sharedUtils.get_single_value_from_config(config_path, 'NETWORK', 'dst_field')
 
 # Parse command line arguments

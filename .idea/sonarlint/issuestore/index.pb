@@ -23,13 +23,6 @@ w
 G.idea/sonarlint/issuestore/b/6/b6832815eade23283e4fdef5dd7f2e8b4cda6e6e,7\7\772b3e30db90867f6f82592532c4aaffdd55b00d
 I
 NetworkMeasure/.gitignore,e\5\e59be358a8e4b313b77b4ab0e70d4d668611a981
-V
-&PowerMeasure/powerChartsLineFromSQL.py,b\3\b35d217c70fd5b35bb1def0ed0f9ea1b804fc05f
-:
-
-config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
-Z
-*NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
 w
 G.idea/sonarlint/issuestore/d/8/d806d809e6fc4a2b9f54ce8d4937514714bef121,8\4\84474093bd22598474408de041d344af78894711
 w
@@ -46,8 +39,6 @@ w
 G.idea/sonarlint/issuestore/f/9/f98c196fa42f0c6ad528b9804862e36baad10ad1,f\0\f04644a8a14de9f19d8e4444f725f2fee0745bca
 w
 G.idea/sonarlint/issuestore/d/5/d51424e8ff5fe67dd87b159b6b89c58addce5da3,b\a\ba44874beed28787c08e83ac1ad4da8f26702a24
-I
-PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
 w
 G.idea/sonarlint/issuestore/2/8/280153e40c7479cb3192c877fa9ac32acab5b589,d\0\d0aecff66fb913f0fdb52ac47b4ac9b2ad9bb6dd
 w
@@ -58,5 +49,3 @@ w
 G.idea/sonarlint/issuestore/e/b/ebb00d582e1facb81bf9726774e22461a0b15e0f,0\2\02817b69c0d5cd96052f882d80149b13c540883d
 w
 G.idea/sonarlint/issuestore/f/0/f04644a8a14de9f19d8e4444f725f2fee0745bca,8\7\875439700d66c7fe42cd3058c362efde051241ce
-F
-Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058

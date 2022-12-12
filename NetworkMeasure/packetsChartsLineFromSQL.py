@@ -6,7 +6,6 @@ sys.path.append(_path_parent)
 
 import matplotlib
 
-matplotlib.use('Qt5Agg')
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
@@ -14,8 +13,9 @@ from Utility import sharedUtils
 
 # Parse config file
 config_path = os.path.join(_path_parent, 'config.ini')
+sharedUtils.set_matplotlib_backend(matplotlib, config_path)
 file_end = sharedUtils.get_file_end_from_config(config_path)
-fields, table_name, where_data = sharedUtils.get_config_from_file(config_path, 'NETWORK')
+fields, table_name, where_data = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK')
 
 # Parse command line arguments
 parser = sharedUtils.get_basic_parser('Plot the stats from a SQL file generated with ipPacketsToStatsSQL.py', file_end)
@@ -33,7 +33,7 @@ sharedUtils.validate_args(args)
 # Create the datasets
 datasets = []
 for db_path in args.db:
-    data = sharedUtils.get_data_from_db(db_path, args.start, args.end, fields, table_name, where_data, args.h24)
+    data = sharedUtils.get_data_from_db(db_path, fields, table_name, args.start, args.end, where_data, args.h24)
 
     if data:
         data = data if not args.h24 else sharedUtils.data_start_from_midnight(data)

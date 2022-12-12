@@ -8,6 +8,11 @@ from datetime import datetime
 import pandas as pd
 
 
+# Set matplotlib backend from config file
+def set_matplotlib_backend(matplotlib, config_file):
+    matplotlib.use(get_single_value_from_config(config_file, 'SETTINGS', 'matplotlib_backend'))
+
+
 # Get the filename from a path
 def get_file_name_from_path(file_path):
     head, tail = ntpath.split(file_path)
@@ -61,7 +66,7 @@ def get_file_end_from_config(config_file):
 
 
 # Get basic config variables from a file
-def get_config_from_file(config_file, section):
+def get_chart_config_from_file(config_file, section):
     config = configparser.ConfigParser()
     config.read(config_file)
     section = config[section]
