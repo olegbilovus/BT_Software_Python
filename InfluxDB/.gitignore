@@ -132,4 +132,4 @@ dmypy.json
 *.sqlite3
 *.db
 
-.hostnames_cache
+*.hostname_cache

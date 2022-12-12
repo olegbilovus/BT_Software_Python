@@ -166,6 +166,10 @@ while not done:
 write_api.close()
 client.close()
 
+# Save the hostnames to the cache file
+ip_utils.save_hostname_cache()
+
 print('\n' * (args.threads * 2))
 print(f'Not found IPs for GeoIP: {ip_utils.geoip2.not_found_ips}')
 print(f'Number of hostnames: {len(ip_utils.hostname_ips_known)}')
+print(f'Number of hostnames added to cache: {ip_utils.new_hostnames}')

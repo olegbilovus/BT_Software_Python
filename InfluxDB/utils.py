@@ -1,3 +1,4 @@
+import json
 import os
 import socket
 import threading
@@ -25,13 +26,27 @@ class GeoIP2:
 
 
 class IPUtils:
+    _hostname_cache_file = '.hostname_cache'
+
     def __init__(self, geoip_path=None):
         self._geo_lock = threading.Lock()
         self._hostname_lock = threading.Lock()
         self.geo_ips_known = {}
         self.hostname_ips_known = {}
+        self.new_hostnames = 0
         if geoip_path:
             self.geoip2 = GeoIP2(geoip_path)
+
+        if os.path.exists(self._hostname_cache_file):
+            self.load_hostname_cache()
+
+    def load_hostname_cache(self):
+        with open(self._hostname_cache_file, 'r') as f:
+            self.hostname_ips_known = json.load(f)
+
+    def save_hostname_cache(self):
+        with open(self._hostname_cache_file, 'w') as f:
+            json.dump(self.hostname_ips_known, f)
 
     def get_relevant_geoip_data(self, ip):
         with self._geo_lock:
@@ -46,4 +61,5 @@ class IPUtils:
                     self.hostname_ips_known[ip] = socket.getnameinfo((ip, 0), 0)[0]
                 except socket.herror:
                     self.hostname_ips_known[ip] = None
+                self.new_hostnames += 1
             return self.hostname_ips_known[ip]
