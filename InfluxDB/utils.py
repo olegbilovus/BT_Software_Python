@@ -5,6 +5,7 @@ import threading
 
 import geoip2.database
 import geoip2.errors
+import requests
 
 
 class GeoIP2:
@@ -41,19 +42,14 @@ class IPUtils:
         self.geo_ips_known = {}
         self.hostname_ips_known = {}
         self.new_hostnames = 0
+        self.new_flagged_hosts = 0
+
         if geoip_path:
             self.geoip2 = GeoIP2(geoip_path)
-
         if os.path.exists(self._hostname_cache_file):
             self.load_hostname_cache()
-
-    def load_hostname_cache(self):
-        with open(self._hostname_cache_file, 'r') as f:
-            self.hostname_ips_known = json.load(f)
-
-    def save_hostname_cache(self):
-        with open(self._hostname_cache_file, 'w') as f:
-            json.dump(self.hostname_ips_known, f)
+        self.flagged_hosts = self.load_flagged_hosts_list()
+        self._local_flagged_hosts_cache = {}
 
     def get_relevant_geoip_data(self, ip):
         if ip not in self.geo_ips_known:
@@ -63,11 +59,17 @@ class IPUtils:
     def get_hostname_from_ip(self, ip):
         if ip not in self.hostname_ips_known:
             try:
-                self.hostname_ips_known[ip] = socket.getnameinfo((ip, 0), 0)[0]
+                self.hostname_ips_known[ip] = socket.gethostbyaddr(ip)[0]
             except socket.herror:
                 self.hostname_ips_known[ip] = None
             self.new_hostnames += 1
-        return self.hostname_ips_known[ip]
+
+        if ip not in self._local_flagged_hosts_cache:
+            self._local_flagged_hosts_cache[ip] = self.hostname_ips_known[ip] in self.flagged_hosts
+        if self._local_flagged_hosts_cache[ip]:
+            self.new_flagged_hosts += 1
+
+        return {'hostname': self.hostname_ips_known[ip], 'flagged': self._local_flagged_hosts_cache[ip]}
 
     def lock(self, function, locker_name):
         locker = getattr(self, locker_name)
@@ -77,6 +79,23 @@ class IPUtils:
                 return function(*args, **kwargs)
 
         return wrapper if locker else function
+
+    def load_hostname_cache(self):
+        with open(self._hostname_cache_file, 'r') as f:
+            self.hostname_ips_known = json.load(f)
+
+    def save_hostname_cache(self):
+        with open(self._hostname_cache_file, 'w') as f:
+            json.dump(self.hostname_ips_known, f)
+
+    @staticmethod
+    def load_flagged_hosts_list():
+        hosts = requests.get('https://raw.githubusercontent.com/StevenBlack/hosts/master/data/StevenBlack/hosts').text
+        hosts = hosts.split("\n")
+        hosts = [host for host in hosts if host.startswith('0')]
+        hosts = [host.split()[1] for host in hosts]
+        hosts.sort()
+        return hosts
 
 
 def split_dataset_in_chunks(dataset, chunk_size):

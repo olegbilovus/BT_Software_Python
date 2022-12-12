@@ -41,6 +41,9 @@ parser.add_argument('--no_lock',
                     action='store_true')
 parser.add_argument('--no_chunk', help='Do not split data into chunks when processing. It may improve the performance',
                     action='store_true')
+parser.add_argument('--db_reset',
+                    help='Reset the database. It will delete any series with the same TAG as the sql database\' name',
+                    action='store_true')
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
@@ -108,6 +111,13 @@ for db_path in args.db:
 client = InfluxDBClient(url=url, token=args.token, org=args.org)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
+if args.db_reset:
+    delete_api = client.delete_api()
+    start = datetime(1970, 1, 1)
+    stop = datetime.utcnow()
+    for dataset in datasets:
+        delete_api.delete(start, stop, bucket=bucket, org=args.org, predicate=f'label="{dataset["label"]}"')
+
 
 def worker_power(jobs):
     while jobs.qsize() > 0:
@@ -139,7 +149,8 @@ def worker_network(jobs):
                 if geo_data:
                     point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
                     point = point.field('country', geo_data['country'])
-            point = point.field('hostname', ip_utils.get_hostname_from_ip(data[dataset['n_dst_index']]))
+            hostname = ip_utils.get_hostname_from_ip(data[dataset['n_dst_index']])
+            point = point.field('hostname', hostname['hostname']).field('flagged', hostname['flagged'])
             write_api.write(bucket, args.org, point)
 
         jobs.task_done()
@@ -188,3 +199,4 @@ print('\n' * (args.threads * 2))
 print(f'Not found IPs for GeoIP: {ip_utils.geoip2.not_found_ips}')
 print(f'Number of hostnames: {len(ip_utils.hostname_ips_known)}')
 print(f'Number of hostnames added to cache: {ip_utils.new_hostnames}')
+print(f'Number of hostnames flagged: {ip_utils.new_flagged_hosts}')
