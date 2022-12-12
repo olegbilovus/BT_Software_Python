@@ -37,7 +37,7 @@ parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
 parser.add_argument('--threads', help='Number of threads to use for each job. If specify x threads, 2*x will be used.',
                     type=int, default=3)
 parser.add_argument('--no_lock',
-                    help='Do not use lock on thread. It may give better performance, but it may lose data or write incorrect data',
+                    help='Do not use lock on threads. It may give better performance, but it may lose or write incorrect data',
                     action='store_true')
 parser.add_argument('--no_chunk', help='Do not split data into chunks when processing. It may improve the performance',
                     action='store_true')
