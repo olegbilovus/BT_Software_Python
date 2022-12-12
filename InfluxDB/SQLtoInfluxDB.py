@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(_path_parent)
@@ -53,28 +54,38 @@ datasets = []
 for db_path in args.db:
     with sqlite3.connect(db_path) as conn:
         c = conn.cursor()
-        c.execute(f'SELECT * FROM {p_table_name}')
-        p_data = c.fetchall()
-        c.execute(f'SELECT * FROM {n_table_name}')
-        n_data = c.fetchall()
+        try:
+            c.execute(f'SELECT * FROM {p_table_name}')
+            p_data = c.fetchall()
+        except sqlite3.OperationalError:
+            p_data = None
+            print(f'No power data in {db_path}')
+        try:
+            c.execute(f'SELECT * FROM {n_table_name}')
+            n_data = c.fetchall()
+        except sqlite3.OperationalError:
+            n_data = None
+            print(f'No network data in {db_path}')
 
-        p_columns = sharedUtils.get_db_table_columns_obj(db_path, p_table_name, conn)
-        n_columns = sharedUtils.get_db_table_columns_obj(db_path, n_table_name, conn)
+        p_columns = sharedUtils.get_db_table_columns_obj(db_path, p_table_name, conn) if p_data else None
+        n_columns = sharedUtils.get_db_table_columns_obj(db_path, n_table_name, conn) if n_data else None
 
-    if p_data and n_data:
-        p_ts_index = sharedUtils.get_timestamp_column_index(p_columns)
-        n_ts_index = sharedUtils.get_timestamp_column_index(n_columns)
-        n_dst_index = sharedUtils.get_column_index(n_columns, n_dst_field)
+    if p_data or n_data:
+        p_ts_index = sharedUtils.get_timestamp_column_index(p_columns) if p_data else None
+        n_ts_index = sharedUtils.get_timestamp_column_index(n_columns) if n_data else None
+        n_dst_index = sharedUtils.get_column_index(n_columns, n_dst_field) if n_data else None
+
+        error_msg = 'No {} column in {} table of {}, skipping the table'
 
         if p_ts_index == -1:
-            print(f'No timestamp column found in {p_table_name} table, skipping the whole database {db_path}')
-            continue
+            print(error_msg.format('timestamp', p_table_name, db_path))
+            p_data = None
         if n_ts_index == -1:
-            print(f'No timestamp column found in {n_table_name} table, skipping the whole database {db_path}')
-            continue
+            print(error_msg.format('timestamp', n_table_name, db_path))
+            n_data = None
         if n_dst_index == -1:
-            print(f'No {n_dst_field} column found in {n_table_name} table, skipping the whole database {db_path}')
-            continue
+            print(error_msg.format(n_dst_field, n_table_name, db_path))
+            n_data = None
 
         datasets.append({
             'label': sharedUtils.get_file_name_from_path(db_path),
@@ -93,11 +104,9 @@ for db_path in args.db:
 client = InfluxDBClient(url=url, token=args.token, org=args.org)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-starting_points = []
-
 
 def worker_power(jobs):
-    while True:
+    while jobs.qsize() > 0:
         dataset = jobs.get()
         for data in tqdm(dataset['p_data'], unit='power_data', desc=f'Processing {dataset["label"]} power data'):
             point = Point(p_measurement).tag('label', dataset['label'])
@@ -111,7 +120,7 @@ def worker_power(jobs):
 
 
 def worker_network(jobs):
-    while True:
+    while jobs.qsize() > 0:
         dataset = jobs.get()
         for data in tqdm(dataset['n_data'], unit='network_data', desc=f'Processing {dataset["label"]} network data'):
             point = Point(n_measurement).tag('label', dataset['label'])
@@ -126,13 +135,18 @@ def worker_network(jobs):
                                                                                                     geo_data['country'])
             write_api.write(bucket, args.org, point)
 
-        starting_points.append((dataset['label'], dataset['p_data'][0][dataset['p_ts_index']]))
         jobs.task_done()
 
 
 # Write data to InfluxDB
 p_jobs = queue.Queue()
 n_jobs = queue.Queue()
+for ds in datasets:
+    if ds['p_data']:
+        p_jobs.put(ds)
+    if ds['n_data']:
+        n_jobs.put(ds)
+
 threads = []
 for _ in range(args.threads):
     p_t = threading.Thread(target=worker_power, args=(p_jobs,), daemon=True)
@@ -142,18 +156,17 @@ for _ in range(args.threads):
     n_t.start()
     threads.append(n_t)
 
-for ds in datasets:
-    p_jobs.put(ds)
-    n_jobs.put(ds)
-
-p_jobs.join()
-n_jobs.join()
+done = False
+while not done:
+    for t in threads:
+        if t.is_alive():
+            time.sleep(1)
+            break
+    else:
+        done = True
 
 write_api.close()
 client.close()
 
 print('\n' * (args.threads * 2))
 print(f'Not found IPs for GeoIP: {geoIP.not_found_ips}')
-print('Starting points:')
-for sp in starting_points:
-    print(f'{sp[0]}: {sp[1]}')
