@@ -20,13 +20,9 @@ I
 w
 G.idea/sonarlint/issuestore/e/5/e59be358a8e4b313b77b4ab0e70d4d668611a981,4\8\480e314dd29c416db722cfa0bf4a6eac4075ad1f
 w
-G.idea/sonarlint/issuestore/a/3/a3369b85f2e190fd575d9636871f39c4f1253ca4,2\8\280153e40c7479cb3192c877fa9ac32acab5b589
-w
 G.idea/sonarlint/issuestore/4/8/480e314dd29c416db722cfa0bf4a6eac4075ad1f,3\3\330560ebbfbe158d831c638d8f0e108acc7b8830
 w
 G.idea/sonarlint/issuestore/8/4/84474093bd22598474408de041d344af78894711,c\5\c532b8c92fc4c5dfbf2b59ea83ef1e7a4e4c989a
-w
-G.idea/sonarlint/issuestore/f/9/f98c196fa42f0c6ad528b9804862e36baad10ad1,f\0\f04644a8a14de9f19d8e4444f725f2fee0745bca
 w
 G.idea/sonarlint/issuestore/2/8/280153e40c7479cb3192c877fa9ac32acab5b589,d\0\d0aecff66fb913f0fdb52ac47b4ac9b2ad9bb6dd
 w
@@ -57,3 +53,10 @@ I
 PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
 7
 LICENSE,0\3\0398ccd0f49298b10a3d76a47800d2ebecd49859
+U
+%NetworkMeasure/ipPacketsToStatsSQL.py,c\9\c9042bee7fb898c7923b09286f2fa2e65b08dbf5
+:
+
+config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
+I
+InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
