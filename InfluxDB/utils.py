@@ -90,11 +90,19 @@ class IPUtils:
 
     @staticmethod
     def load_flagged_hosts_list():
-        hosts = requests.get('https://raw.githubusercontent.com/StevenBlack/hosts/master/data/StevenBlack/hosts').text
-        hosts = hosts.split("\n")
-        hosts = [host for host in hosts if host.startswith('0')]
-        hosts = [host.split()[1] for host in hosts]
-        hosts.sort()
+        hosts = set()
+
+        # StevenBlack hosts file
+        hosts1 = requests.get('https://raw.githubusercontent.com/StevenBlack/hosts/master/data/StevenBlack/hosts').text
+        hosts1 = hosts1.split("\n")
+        hosts1 = [host for host in hosts1 if host.startswith('0')]
+        hosts1 = [host.split()[1] for host in hosts1]
+        hosts.update(hosts1)
+
+        # Stamparm hosts file
+        hosts2 = requests.get('https://raw.githubusercontent.com/stamparm/aux/master/maltrail-malware-domains.txt').text
+        hosts2 = hosts2.split("\n")
+        hosts.update(hosts2)
         return hosts
 
 
