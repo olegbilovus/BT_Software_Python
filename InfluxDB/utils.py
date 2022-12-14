@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import os
 import socket
@@ -104,6 +105,10 @@ class IPUtils:
         hosts2 = hosts2.split("\n")
         hosts.update(hosts2)
         return hosts
+
+
+def is_private_ip(ip):
+    return ipaddress.ip_address(ip).is_private
 
 
 def split_dataset_in_chunks(dataset, chunk_size):

@@ -144,13 +144,15 @@ def worker_network(jobs):
                 if i != dataset['n_ts_index']:
                     point = point.field(column[1], data[i])
             point = point.time(datetime.fromisoformat(data[dataset['n_ts_index']]))
+            dst_ip = data[dataset['n_dst_index']]
             if args.geoIP:
-                geo_data = ip_utils.get_relevant_geoip_data(data[dataset['n_dst_index']])
+                geo_data = ip_utils.get_relevant_geoip_data(dst_ip)
                 if geo_data:
                     point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
                     point = point.field('country', geo_data['country'])
-            hostname = ip_utils.get_hostname_from_ip(data[dataset['n_dst_index']])
+            hostname = ip_utils.get_hostname_from_ip(dst_ip)
             point = point.field('hostname', hostname['hostname']).field('flagged', hostname['flagged'])
+            point = point.field('private', utils.is_private_ip(dst_ip))
             write_api.write(bucket, args.org, point)
 
         jobs.task_done()
@@ -197,6 +199,6 @@ ip_utils.save_hostname_cache()
 
 print('\n' * (args.threads * 2))
 print(f'Not found IPs for GeoIP: {ip_utils.geoip2.not_found_ips}')
-print(f'Number of hostnames: {len(ip_utils.hostname_ips_known)}')
+print(f'Number of hostnames in cache: {len(ip_utils.hostname_ips_known)}')
 print(f'Number of hostnames added to cache: {ip_utils.new_hostnames}')
 print(f'Number of hostnames flagged: {ip_utils.new_flagged_hosts}')
