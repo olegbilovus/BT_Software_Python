@@ -23,7 +23,7 @@ _, table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK'
 parser = argparse.ArgumentParser(
     description='Convert pcap file to SQL stats, it considers only IP packets. ARP and some other packets are ignored.')
 sharedUtils.parser_add_db_args(parser, table_name)
-parser.add_argument('--pcap', help='pcap file')
+parser.add_argument('--pcap', help='pcap file', required=True)
 print_args = parser.add_mutually_exclusive_group()
 print_args.add_argument('--n_packets', help='number of packets to process, used for the progress bar', type=int)
 print_args.add_argument('-v', '--verbose', action='store_true', help='verbose output')

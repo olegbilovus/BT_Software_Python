@@ -49,14 +49,16 @@ G
 NetworkMeasure/utils.py,d\8\d806d809e6fc4a2b9f54ce8d4937514714bef121
 H
 Utility/script_on_all.py,1\c\1cfb95da1348f2aa3203dce3d5cb8bc114f34bc5
-I
-PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
 7
 LICENSE,0\3\0398ccd0f49298b10a3d76a47800d2ebecd49859
-U
-%NetworkMeasure/ipPacketsToStatsSQL.py,c\9\c9042bee7fb898c7923b09286f2fa2e65b08dbf5
 :
 
 config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
 I
 InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
+I
+InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
+F
+Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058
+A
+InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
