@@ -62,3 +62,13 @@ F
 Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058
 A
 InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
+I
+PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
+S
+#.idea/sonarlint/issuestore/index.pb,9\f\9fe84ebb15faf917b7def6236dba604453cc61e0
+w
+G.idea/sonarlint/issuestore/b/6/b662040252fcfe81a20ecaee0ed96b6525edf054,4\b\4bcbf7632b28988dc76af56cb3bd4f99ed41fa7c
+w
+G.idea/sonarlint/issuestore/f/b/fb0b0c204113556a33a5abca1ea3463436062058,f\4\f434d089d6cbf309ebf03a7910fb154b22e20640
+U
+%NetworkMeasure/ipPacketsToStatsSQL.py,c\9\c9042bee7fb898c7923b09286f2fa2e65b08dbf5
