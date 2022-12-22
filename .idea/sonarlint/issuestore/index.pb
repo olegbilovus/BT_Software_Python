@@ -47,8 +47,6 @@ Z
 *NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
 G
 NetworkMeasure/utils.py,d\8\d806d809e6fc4a2b9f54ce8d4937514714bef121
-H
-Utility/script_on_all.py,1\c\1cfb95da1348f2aa3203dce3d5cb8bc114f34bc5
 7
 LICENSE,0\3\0398ccd0f49298b10a3d76a47800d2ebecd49859
 :
@@ -56,16 +54,12 @@ H
 config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
 I
 InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
-I
-InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
 F
 Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058
 A
 InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
 I
 PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
-S
-#.idea/sonarlint/issuestore/index.pb,9\f\9fe84ebb15faf917b7def6236dba604453cc61e0
 w
 G.idea/sonarlint/issuestore/b/6/b662040252fcfe81a20ecaee0ed96b6525edf054,4\b\4bcbf7632b28988dc76af56cb3bd4f99ed41fa7c
 w
