@@ -845,6 +845,242 @@
         "type": "influxdb",
         "uid": "${DS_BT_EX}"
       },
+      "description": "A Pie Chart that shows which are the most IPs present in the traffic capture for the filtered Layer 4 and Port value.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "_value"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "id": 34,
+      "maxDataPoints": 500000,
+      "options": {
+        "displayLabels": [
+          "name"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "limit": 5000,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "2.0.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "hide": false,
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"dst\" or r._field == \"transport\" or r._field == \"dport\")\r\n    and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.transport == \"${l4}\" and r.dport == ${port})\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"dst\"])\r\n  |> count()\r\n  |> group()\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Destination IPs for ${l4}:${port}",
+      "transformations": [],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_BT_EX}"
+      },
+      "description": "Shows the hostnames with their relative IP and if they have been flagged for the filtered Layer 4 and Port. Count indicates how many times an IP have been seen in the outgoing traffic.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "flagged"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "false": {
+                        "color": "dark-green",
+                        "index": 0
+                      },
+                      "true": {
+                        "color": "dark-red",
+                        "index": 1
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "custom.width",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hostname"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 238
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 31
+      },
+      "id": 33,
+      "maxDataPoints": 500000,
+      "options": {
+        "footer": {
+          "enablePagination": true,
+          "fields": [
+            "count"
+          ],
+          "reducer": [],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "count"
+          }
+        ]
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "hide": false,
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"flagged\" or r._field == \"private\" \r\n    or r._field == \"hostname\" or r._field == \"dst\" or r._field == \"transport\" or r._field == \"dport\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.transport == \"${l4}\" and r.dport == ${port})\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"flagged\", \"hostname\", \"dst\"])\r\n  |> count()\r\n  |> group()\r\n  |> rename(columns: {_value: \"count\"})\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Table of hostnames for ${l4}:${port}",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": true
+            },
+            "indexByName": {
+              "Value": 3,
+              "dst": 1,
+              "flagged": 2,
+              "hostname": 0
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_BT_EX}"
+      },
       "description": "A scatter plots which compare the power and the number of packets sent/received.",
       "fieldConfig": {
         "defaults": {
@@ -892,7 +1128,7 @@
         "h": 17,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 40
       },
       "id": 22,
       "maxDataPoints": 500000,
@@ -943,7 +1179,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 57
       },
       "id": 15,
       "panels": [],
@@ -1012,7 +1248,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 49
+        "y": 58
       },
       "id": 13,
       "maxDataPoints": 500000,
@@ -1121,7 +1357,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 49
+        "y": 58
       },
       "id": 24,
       "maxDataPoints": 500000,
@@ -1214,7 +1450,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 67
       },
       "id": 25,
       "maxDataPoints": 500000,
@@ -1308,7 +1544,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 67
       },
       "id": 23,
       "maxDataPoints": 500000,
@@ -1364,7 +1600,7 @@
         "h": 9,
         "w": 6,
         "x": 0,
-        "y": 68
+        "y": 77
       },
       "id": 28,
       "maxDataPoints": 500000,
@@ -1436,7 +1672,7 @@
         "h": 9,
         "w": 6,
         "x": 6,
-        "y": 68
+        "y": 77
       },
       "id": 27,
       "maxDataPoints": 500000,
@@ -1565,7 +1801,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 68
+        "y": 77
       },
       "id": 29,
       "maxDataPoints": 500000,
@@ -1640,7 +1876,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 77
+        "y": 86
       },
       "id": 20,
       "maxDataPoints": 500000,
@@ -1712,7 +1948,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 77
+        "y": 86
       },
       "id": 17,
       "maxDataPoints": 500000,
@@ -1797,7 +2033,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 77
+        "y": 86
       },
       "id": 21,
       "maxDataPoints": 500000,
@@ -1846,7 +2082,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 86
+        "y": 95
       },
       "id": 19,
       "panels": [],
@@ -1915,7 +2151,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 87
+        "y": 96
       },
       "id": 10,
       "maxDataPoints": 50000,
@@ -2005,7 +2241,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 87
+        "y": 96
       },
       "id": 26,
       "maxDataPoints": 50000,
@@ -2125,13 +2361,13 @@
     ]
   },
   "time": {
-    "from": "2022-11-20T11:06:29.000Z",
-    "to": "2022-11-20T11:08:17.000Z"
+    "from": "2022-12-15T10:10:39.000Z",
+    "to": "2022-12-16T10:09:58.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 14,
+  "version": 15,
   "weekStart": ""
 }
