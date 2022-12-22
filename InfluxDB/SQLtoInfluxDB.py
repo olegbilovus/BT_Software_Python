@@ -44,6 +44,7 @@ parser.add_argument('--no_chunk', help='Do not split data into chunks when proce
 parser.add_argument('--db_reset',
                     help='Reset the database. It will delete any series with the same TAG as the sql database\' name',
                     action='store_true')
+parser.add_argument('--delete', help='Delete data from InfluxDB', action='store_true')
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
@@ -111,12 +112,14 @@ for db_path in args.db:
 client = InfluxDBClient(url=url, token=args.token, org=args.org)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-if args.db_reset:
+if args.db_reset or args.delete:
     delete_api = client.delete_api()
     start = datetime(1970, 1, 1)
     stop = datetime.utcnow()
     for dataset in datasets:
         delete_api.delete(start, stop, bucket=bucket, org=args.org, predicate=f'label="{dataset["label"]}"')
+    if args.delete:
+        exit(f'Deleted the dataset(s) {[dataset["label"] for dataset in datasets]}')
 
 
 def worker_power(jobs):
