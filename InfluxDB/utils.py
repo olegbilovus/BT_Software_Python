@@ -114,6 +114,8 @@ def is_private_ip(ip):
 def split_dataset_in_chunks(dataset, chunk_size):
     # Using yield would be better to avoid memory issues, but it is not easy to manage with multithreading
     chunks = []
+    num_p_chunks = 0
+    num_n_chunks = 0
     len_p_data = len(dataset['p_data']) if dataset['p_data'] else 0
     len_n_data = len(dataset['n_data']) if dataset['n_data'] else 0
 
@@ -129,4 +131,8 @@ def split_dataset_in_chunks(dataset, chunk_size):
             'n_dst_index': dataset['n_dst_index']
         }
         chunks.append(chunk_dataset)
-    return chunks
+        if chunk_dataset['p_data']:
+            num_p_chunks += 1
+        if chunk_dataset['n_data']:
+            num_n_chunks += 1
+    return chunks, num_p_chunks, num_n_chunks

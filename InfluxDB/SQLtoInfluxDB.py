@@ -165,14 +165,18 @@ def worker_network(jobs):
 p_jobs = queue.Queue()
 n_jobs = queue.Queue()
 for _dataset in datasets:
-    ds_chunks = utils.split_dataset_in_chunks(_dataset, max_data_per_thread) if not args.no_chunk else [_dataset]
+    if not args.no_chunk:
+        ds_chunks, num_p_chunks, num_n_chunks = utils.split_dataset_in_chunks(_dataset, max_data_per_thread)
+    else:
+        ds_chunks = [_dataset]
+        num_p_chunks = 1
+        num_n_chunks = 1
     len_ds_chunks = len(ds_chunks)
     for i, ds in enumerate(ds_chunks):
-        ds_to_add = (ds, i + 1, len_ds_chunks)
         if ds['p_data']:
-            p_jobs.put(ds_to_add)
+            p_jobs.put((ds, i + 1, num_p_chunks))
         if ds['n_data']:
-            n_jobs.put(ds_to_add)
+            n_jobs.put((ds, i + 1, num_n_chunks))
 
 # Start threads
 threads = []
