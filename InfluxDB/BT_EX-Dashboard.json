@@ -85,7 +85,7 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "enable": false,
+        "enable": true,
         "iconColor": "#1f61c440",
         "mappings": {
           "tags": {
@@ -671,8 +671,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -778,8 +777,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -960,8 +958,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1111,8 +1108,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1222,8 +1218,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1328,8 +1323,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1532,8 +1526,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1738,8 +1731,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1815,7 +1807,12 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "count"
+          }
+        ]
       },
       "pluginVersion": "9.3.2",
       "targets": [
@@ -2125,8 +2122,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2215,8 +2211,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2361,13 +2356,13 @@
     ]
   },
   "time": {
-    "from": "2022-12-15T10:10:39.000Z",
-    "to": "2022-12-16T10:09:58.000Z"
+    "from": "2022-11-22T12:03:20.000Z",
+    "to": "2022-11-22T12:05:26.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 15,
+  "version": 21,
   "weekStart": ""
 }
