@@ -10,13 +10,15 @@ import sqlite3
 from datetime import datetime
 from tqdm import tqdm
 
-from influxdb_client import InfluxDBClient, Point
+from influxdb_client import InfluxDBClient, Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
 import utils
 import threading
 import queue
 
 from Utility import sharedUtils
+
+_start_time = time.time()
 
 # Parse config file
 config_path = os.path.join(_path_parent, 'config.ini')
@@ -45,6 +47,9 @@ parser.add_argument('--db_reset',
                     help='Reset the database. It will delete any series with the same TAG as the sql database\' name',
                     action='store_true')
 parser.add_argument('--delete', help='Delete data from InfluxDB', action='store_true')
+parser.add_argument('--batch_size',
+                    help='Batch size for InfluxDB write. Default 1000. Increasing the value may improve the performance',
+                    type=int, default=1000)
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
@@ -110,7 +115,8 @@ for db_path in args.db:
 
 # Connect to InfluxDB
 client = InfluxDBClient(url=url, token=args.token, org=args.org)
-write_api = client.write_api(write_options=SYNCHRONOUS)
+wo = WriteOptions(batch_size=args.batch_size, write_type=SYNCHRONOUS)
+write_api = client.write_api(write_options=wo)
 
 if args.db_reset or args.delete:
     delete_api = client.delete_api()
@@ -209,3 +215,6 @@ print(f'Not found IPs for GeoIP: {ip_utils.geoip2.not_found_ips}')
 print(f'Number of hostnames in cache: {len(ip_utils.hostname_ips_known)}')
 print(f'Number of hostnames added to cache: {ip_utils.new_hostnames}')
 print(f'Number of hostnames flagged: {ip_utils.new_flagged_hosts}')
+
+_end_time = time.time()
+print(f'Finished in {_end_time - _start_time:.2f} seconds')
