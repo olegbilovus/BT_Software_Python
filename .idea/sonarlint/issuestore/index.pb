@@ -68,9 +68,5 @@ H
 Utility/script_on_all.py,1\c\1cfb95da1348f2aa3203dce3d5cb8bc114f34bc5
 M
 InfluxDB/BT_EX-Dashboard.json,3\c\3c335acaeb9e760765cf27ae9e63dcca01ba0434
-S
-#.idea/sonarlint/issuestore/index.pb,9\f\9fe84ebb15faf917b7def6236dba604453cc61e0
 A
 InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
-I
-InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
