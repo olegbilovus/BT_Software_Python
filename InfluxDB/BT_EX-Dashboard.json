@@ -88,13 +88,17 @@
         "enable": true,
         "iconColor": "#1f61c440",
         "mappings": {
+          "id": {
+            "source": "field",
+            "value": "_time"
+          },
           "tags": {
             "source": "field",
-            "value": "hostname {_start=\"2022-12-15 10:10:39 +0000 UTC\", _stop=\"2022-12-16 10:09:58 +0000 UTC\", label=\"BT_EX_12_01.db\"}"
+            "value": "hostname {_start=\"2022-11-20 11:06:29 +0000 UTC\", _stop=\"2022-11-20 11:08:17 +0000 UTC\", label=\"BT_EX_06_01.db\"}"
           },
           "text": {
             "source": "field",
-            "value": "hostname {_start=\"2022-12-15 10:10:39 +0000 UTC\", _stop=\"2022-12-16 10:09:58 +0000 UTC\", label=\"BT_EX_12_01.db\"}"
+            "value": "private {_start=\"2022-11-20 11:06:29 +0000 UTC\", _stop=\"2022-11-20 11:08:17 +0000 UTC\", label=\"BT_EX_06_01.db\"}"
           },
           "time": {
             "source": "field",
@@ -106,7 +110,7 @@
           },
           "title": {
             "source": "field",
-            "value": "dst {_start=\"2022-12-15 10:10:39 +0000 UTC\", _stop=\"2022-12-16 10:09:58 +0000 UTC\", label=\"BT_EX_12_01.db\"}"
+            "value": "dst {_start=\"2022-11-20 11:06:29 +0000 UTC\", _stop=\"2022-11-20 11:08:17 +0000 UTC\", label=\"BT_EX_06_01.db\"}"
           }
         },
         "name": "Highlight protocol",
@@ -187,7 +191,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Basic info",
+      "title": "Overview",
       "type": "row"
     },
     {
@@ -671,7 +675,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -777,7 +782,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -958,7 +964,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1078,6 +1085,161 @@
         "type": "influxdb",
         "uid": "${DS_BT_EX}"
       },
+      "description": "Shows on the same timeline the packets and the load.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "packets"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 36
+              },
+              {
+                "id": "displayName",
+                "value": "packets"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "load"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "watt"
+              },
+              {
+                "id": "displayName",
+                "value": "load"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 36,
+      "maxDataPoints": 500000,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r.label == \"${label}\" and r._field == \"No\")\r\n  |> aggregateWindow(every: ${period}, fn: count)\r\n  |> rename(columns: {_value: \"packets\"})",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "hide": false,
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"power\" and r.label == \"${label}\" and r._field == \"load\")\r\n  |> aggregateWindow(every: ${period}, fn: mean)\r\n  |> rename(columns: {_value: \"load\"})",
+          "refId": "B"
+        }
+      ],
+      "title": "Packets/$period and load(mean)/$period",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_BT_EX}"
+      },
       "description": "A scatter plots which compare the power and the number of packets sent/received.",
       "fieldConfig": {
         "defaults": {
@@ -1108,7 +1270,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1124,7 +1287,7 @@
         "h": 17,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 51
       },
       "id": 22,
       "maxDataPoints": 500000,
@@ -1175,7 +1338,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 57
+        "y": 68
       },
       "id": 15,
       "panels": [],
@@ -1218,7 +1381,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -1243,7 +1407,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 69
       },
       "id": 13,
       "maxDataPoints": 500000,
@@ -1323,7 +1487,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1351,7 +1516,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 69
       },
       "id": 24,
       "maxDataPoints": 500000,
@@ -1444,7 +1609,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 67
+        "y": 78
       },
       "id": 25,
       "maxDataPoints": 500000,
@@ -1526,7 +1691,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           }
@@ -1537,7 +1703,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 67
+        "y": 78
       },
       "id": 23,
       "maxDataPoints": 500000,
@@ -1593,7 +1759,7 @@
         "h": 9,
         "w": 6,
         "x": 0,
-        "y": 77
+        "y": 88
       },
       "id": 28,
       "maxDataPoints": 500000,
@@ -1665,7 +1831,7 @@
         "h": 9,
         "w": 6,
         "x": 6,
-        "y": 77
+        "y": 88
       },
       "id": 27,
       "maxDataPoints": 500000,
@@ -1731,7 +1897,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1793,7 +1960,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 77
+        "y": 88
       },
       "id": 29,
       "maxDataPoints": 500000,
@@ -1873,7 +2040,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 86
+        "y": 97
       },
       "id": 20,
       "maxDataPoints": 500000,
@@ -1945,7 +2112,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 86
+        "y": 97
       },
       "id": 17,
       "maxDataPoints": 500000,
@@ -2030,7 +2197,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 86
+        "y": 97
       },
       "id": 21,
       "maxDataPoints": 500000,
@@ -2079,7 +2246,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 95
+        "y": 106
       },
       "id": 19,
       "panels": [],
@@ -2122,7 +2289,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -2147,7 +2315,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 96
+        "y": 107
       },
       "id": 10,
       "maxDataPoints": 50000,
@@ -2211,7 +2379,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               }
             ]
           },
@@ -2236,7 +2405,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 96
+        "y": 107
       },
       "id": 26,
       "maxDataPoints": 50000,
@@ -2292,7 +2461,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "1s",
           "value": "1s"
         },
@@ -2313,7 +2482,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "UDP",
           "value": "UDP"
         },
@@ -2334,7 +2503,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "443",
           "value": "443"
         },
@@ -2356,13 +2525,13 @@
     ]
   },
   "time": {
-    "from": "2022-11-22T12:03:20.000Z",
-    "to": "2022-11-22T12:05:26.000Z"
+    "from": "2022-12-23T09:31:09.000Z",
+    "to": "2022-12-24T09:28:08.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 21,
+  "version": 9,
   "weekStart": ""
 }

@@ -70,3 +70,5 @@ M
 InfluxDB/BT_EX-Dashboard.json,3\c\3c335acaeb9e760765cf27ae9e63dcca01ba0434
 A
 InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
+I
+InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
