@@ -85,6 +85,7 @@ if args.invert_axis:
     x_label, y_label = y_label, x_label
 sharedUtils.plot_data_from_datasets(plt, 'scatter', sharedUtils.get_file_name_from_path(__file__), datasets, fields,
                                     y_label, x_label=x_label, no_fill=True, color=args.color, marker=args.marker,
-                                    no_grid=args.no_grid, grp_freq=args.grp_freq, keep_xdata=True, force_legend=True)
+                                    no_grid=args.no_grid, legend=not args.no_legend, grp_freq=args.grp_freq,
+                                    keep_xdata=True, force_legend=True)
 
 plt.show()
