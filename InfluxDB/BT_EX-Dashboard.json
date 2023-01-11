@@ -163,10 +163,9 @@
         "buttonTextOption": "button_text",
         "displayButtonsHorizontal": false,
         "displayStyle": "button",
-        "primaryFieldOption": "primary",
         "primaryFieldValueOption": "1",
-        "timeFromOption": "timeA",
-        "timeToOption": "timeB"
+        "timeFromOption": "timeF",
+        "timeToOption": "timeL"
       },
       "targets": [
         {
@@ -174,7 +173,7 @@
             "type": "influxdb",
             "uid": "${DS_BT_EX}"
           },
-          "query": "import \"join\"\r\n\r\nall = from(bucket: \"BT_EX\")\r\n      |> range(start: 0)\r\n      |> filter(fn: (r) => r._measurement == \"network\" and r.label == \"${label}\" and r._field == \"length\")\r\n\r\nstartP = all\r\n      |> first()\r\n      |> map(fn: (r) => ({r with _value: 0}))\r\n      |> map(fn: (r) => ({r with timeA: r._time}))\r\n\r\nstopP = all\r\n      |> last()\r\n      |> map(fn: (r) => ({r with _value: 0}))\r\n      |> map(fn: (r) => ({r with timeA: r._time}))\r\n\r\njoin.inner(left: startP, right: stopP, on: (l, r) => l._value == r._value, as: (l, r) => ({l with timeB: r._time}))  \r\n      |> keep(columns: [\"timeA\", \"timeB\"])\r\n      |> map(fn: (r) => ({r with timeA: int(v: uint(v: r.timeA)) / 1000000000}))\r\n      |> map(fn: (r) => ({r with timeB: int(v: uint(v: r.timeB)) / 1000000000}))",
+          "query": "import \"join\"\r\n\r\npowerAll = from(bucket: \"BT_EX\")\r\n            |> range(start: 0)\r\n            |> filter(fn: (r) => r._measurement == \"power\" and r.label == \"${label}\" and r._field == \"load\")\r\n\r\nnetworkAll = from(bucket: \"BT_EX\")\r\n            |> range(start: 0)\r\n            |> filter(fn: (r) => r._measurement == \"network\" and r.label == \"${label}\" and r._field == \"No\")\r\n\r\n// power\r\npowerF = powerAll\r\n            |> first()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeF: r._time, _value: 0}))\r\n\r\npowerL = powerAll\r\n            |> last()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeL: r._time, _value: 0}))\r\n\r\npowerJoin = join.inner(left: powerF, right: powerL, on: (l, r) => l._value == r._value, as: (l, r) => ({timeF: l.timeF, timeL: r.timeL, _value: 0}))\r\n\r\n// network\r\nnetworkF = networkAll\r\n            |> first()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeF: r._time, _value: 0}))\r\n\r\nnetworkL = networkAll\r\n            |> last()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeL: r._time, _value: 0}))\r\n\r\nnetworkJoin = join.inner(left: networkF, right: networkL, on: (l, r) => l._value == r._value, as: (l, r) => ({timeF: l.timeF, timeL: r.timeL, _value: 0}))\r\n\r\n// result\r\njoin.inner(left: powerJoin,\r\n          right: networkJoin,\r\n          on: (l, r) => l._value == r._value, \r\n          as: (l, r) => ({timeF: if l.timeF < r.timeF then l.timeF else r.timeF, timeL: if l.timeL > r.timeL then l.timeL else r.timeL}))\r\n  |> map(fn: (r) => ({r with timeF: int(v: uint(v: r.timeF)) / 1000000000}))\r\n  |> map(fn: (r) => ({r with timeL: int(v: uint(v: r.timeL)) / 1000000000}))\r\n",
           "refId": "A"
         }
       ],
@@ -2461,7 +2460,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "1s",
           "value": "1s"
         },
@@ -2482,7 +2481,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "UDP",
           "value": "UDP"
         },
@@ -2503,7 +2502,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "443",
           "value": "443"
         },
@@ -2525,13 +2524,13 @@
     ]
   },
   "time": {
-    "from": "2022-12-23T09:31:09.000Z",
-    "to": "2022-12-24T09:28:08.000Z"
+    "from": "2023-01-10T16:51:44.000Z",
+    "to": "2023-01-10T16:53:43.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 9,
+  "version": 10,
   "weekStart": ""
 }

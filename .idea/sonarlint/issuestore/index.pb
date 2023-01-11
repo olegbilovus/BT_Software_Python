@@ -62,3 +62,13 @@ M
 InfluxDB/BT_EX-Dashboard.json,3\c\3c335acaeb9e760765cf27ae9e63dcca01ba0434
 A
 InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
+I
+InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
+V
+&PowerMeasure/powerChartsLineFromSQL.py,b\3\b35d217c70fd5b35bb1def0ed0f9ea1b804fc05f
+F
+Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058
+Z
+*NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
+_
+/PowerNetworkCharts/powerPacketsChartsFromSQL.py,a\e\ae6601311f8093cfd57055b96bad71e71216a157
