@@ -9,6 +9,7 @@ import argparse
 import sqlite3
 from datetime import datetime
 from tqdm import tqdm
+import requests
 
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -36,6 +37,7 @@ parser.add_argument('-u', '--url', help='InfluxDB URL. Default from config.ini')
 parser.add_argument('-t', '--token', help='InfluxDB token', required=True)
 parser.add_argument('-o', '--org', help='InfluxDB organization', required=True)
 parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
+parser.add_argument('--no_verifySSL', help='Disable SSL verification', action='store_true')
 parser.add_argument('--threads', help='Number of threads to use for each job. If specify x threads, 2*x will be used.',
                     type=int, default=3)
 parser.add_argument('--no_lock',
@@ -114,7 +116,9 @@ for db_path in args.db:
         print(f'No data in {db_path}')
 
 # Connect to InfluxDB
-client = InfluxDBClient(url=url, token=args.token, org=args.org)
+if args.no_verifySSL:
+    requests.packages.urllib3.disable_warnings()
+client = InfluxDBClient(url=url, token=args.token, org=args.org, verify_ssl=not args.no_verifySSL)
 wo = WriteOptions(batch_size=args.batch_size, write_type=SYNCHRONOUS)
 write_api = client.write_api(write_options=wo)
 
