@@ -12,7 +12,7 @@ from tqdm import tqdm
 import requests
 
 from influxdb_client import InfluxDBClient, Point, WriteOptions
-from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
 import utils
 import threading
 import queue
@@ -38,6 +38,7 @@ parser.add_argument('-t', '--token', help='InfluxDB token', required=True)
 parser.add_argument('-o', '--org', help='InfluxDB organization', required=True)
 parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
 parser.add_argument('--no_verifySSL', help='Disable SSL verification', action='store_true')
+parser.add_argument('--asynchronous', help='Use asynchronous write', action='store_true')
 parser.add_argument('--threads', help='Number of threads to use for each job. If specify x threads, 2*x will be used.',
                     type=int, default=3)
 parser.add_argument('--no_lock',
@@ -118,8 +119,10 @@ for db_path in args.db:
 # Connect to InfluxDB
 if args.no_verifySSL:
     requests.packages.urllib3.disable_warnings()
+if args.asynchronous:
+    print('Using asynchronous write')
 client = InfluxDBClient(url=url, token=args.token, org=args.org, verify_ssl=not args.no_verifySSL)
-wo = WriteOptions(batch_size=args.batch_size, write_type=SYNCHRONOUS)
+wo = WriteOptions(batch_size=args.batch_size, write_type=ASYNCHRONOUS if args.asynchronous else SYNCHRONOUS)
 write_api = client.write_api(write_options=wo)
 
 if args.db_reset or args.delete:
