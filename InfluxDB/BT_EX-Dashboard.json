@@ -86,7 +86,7 @@
           "uid": "${DS_BT_EX}"
         },
         "enable": true,
-        "iconColor": "#1f61c440",
+        "iconColor": "#4deeea66",
         "mappings": {
           "id": {
             "source": "field",
@@ -163,6 +163,7 @@
         "buttonTextOption": "button_text",
         "displayButtonsHorizontal": false,
         "displayStyle": "button",
+        "primaryFieldOption": "primary",
         "primaryFieldValueOption": "1",
         "timeFromOption": "timeF",
         "timeToOption": "timeL"
@@ -1125,8 +1126,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1269,8 +1269,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1380,8 +1379,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1486,8 +1484,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1690,8 +1687,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1896,8 +1892,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2288,8 +2283,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2378,8 +2372,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2524,13 +2517,13 @@
     ]
   },
   "time": {
-    "from": "2023-01-10T16:51:44.000Z",
-    "to": "2023-01-10T16:53:43.000Z"
+    "from": "2023-01-10T17:07:23.000Z",
+    "to": "2023-01-10T17:09:22.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 10,
+  "version": 12,
   "weekStart": ""
 }
