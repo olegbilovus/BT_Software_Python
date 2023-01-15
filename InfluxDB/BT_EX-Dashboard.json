@@ -86,7 +86,7 @@
           "uid": "${DS_BT_EX}"
         },
         "enable": true,
-        "iconColor": "#4deeea66",
+        "iconColor": "#9b00ff66",
         "mappings": {
           "id": {
             "source": "field",
@@ -964,8 +964,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2517,13 +2516,13 @@
     ]
   },
   "time": {
-    "from": "2023-01-10T17:07:23.000Z",
-    "to": "2023-01-10T17:09:22.000Z"
+    "from": "2023-01-09T16:58:31.000Z",
+    "to": "2023-01-09T17:00:29.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 12,
+  "version": 17,
   "weekStart": ""
 }
