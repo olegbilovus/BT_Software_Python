@@ -11,7 +11,7 @@ The scripts can be used in the specified order to get all the data or can be use
 3. Allows generating a scatter plot combining the data from the energy consumption and Internet traffic.
 4. Allows to save the energy consumption data and to process and save the Internet traffic data to an InfluxDB bucket to view it on Grafana.
 
-Each script has its own README where are explained the details.
+Each script has its own README where are explained the details. Each script also has its own requirements.txt, otherwise, the one in the root directory can be used to install all the dependencies.
 
 The following diagram shows a possible methodology to monitor and save energy consumption and Internet traffic data using the scripts.
 ![Capture methodology](docs/images/capture_methodology.png)
