@@ -12,7 +12,7 @@ from tqdm import tqdm
 import requests
 
 from influxdb_client import InfluxDBClient, Point, WriteOptions
-from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS
 import utils
 import threading
 import queue
@@ -38,7 +38,6 @@ parser.add_argument('-t', '--token', help='InfluxDB token', required=True)
 parser.add_argument('-o', '--org', help='InfluxDB organization', required=True)
 parser.add_argument('-g', '--geoIP', help='GeoIP MaxMind DB directory path')
 parser.add_argument('--no_verifySSL', help='Disable SSL verification', action='store_true')
-parser.add_argument('--asynchronous', help='Use asynchronous write', action='store_true')
 parser.add_argument('--threads', help='Number of threads to use for each job. If specify x threads, 2*x will be used.',
                     type=int, default=3)
 parser.add_argument('--no_lock',
@@ -50,9 +49,9 @@ parser.add_argument('--db_reset',
                     help='Reset the database. It will delete any series with the same TAG as the sql database\' name',
                     action='store_true')
 parser.add_argument('--delete', help='Delete data from InfluxDB', action='store_true')
-parser.add_argument('--batch_size',
-                    help='Batch size for InfluxDB write. Default 1000. Increasing the value may improve the performance',
-                    type=int, default=1000)
+parser.add_argument('--cache_size',
+                    help='Cache size for InfluxDB write. Default 3000. Increasing the value may improve the performance',
+                    type=int, default=3000)
 args = parser.parse_args()
 
 url, bucket, p_measurement, n_measurement = sharedUtils.get_config_influxdb_from_file(config_path)
@@ -119,10 +118,8 @@ for db_path in args.db:
 # Connect to InfluxDB
 if args.no_verifySSL:
     requests.packages.urllib3.disable_warnings()
-if args.asynchronous:
-    print('Using asynchronous write')
 client = InfluxDBClient(url=url, token=args.token, org=args.org, verify_ssl=not args.no_verifySSL)
-wo = WriteOptions(batch_size=args.batch_size, write_type=ASYNCHRONOUS if args.asynchronous else SYNCHRONOUS)
+wo = WriteOptions(write_type=SYNCHRONOUS)
 write_api = client.write_api(write_options=wo)
 
 if args.db_reset or args.delete:
@@ -136,6 +133,7 @@ if args.db_reset or args.delete:
 
 
 def worker_power(jobs):
+    cache = []
     while jobs.qsize() > 0:
         dataset, chunk_number, total_chunks = jobs.get()
         for data in tqdm(dataset['p_data'], unit='power_data',
@@ -145,12 +143,18 @@ def worker_power(jobs):
                 if i != dataset['p_ts_index']:
                     point = point.field(column[1], data[i])
             point = point.time(datetime.fromisoformat(data[dataset['p_ts_index']]))
-            write_api.write(bucket, args.org, point)
+            cache.append(point)
+            if len(cache) >= args.cache_size:
+                write_api.write(bucket, args.org, cache)
+                cache = []
 
         jobs.task_done()
+    if len(cache) > 0:
+        write_api.write(bucket, args.org, cache)
 
 
 def worker_network(jobs):
+    cache = []
     while jobs.qsize() > 0:
         dataset, chunk_number, total_chunks = jobs.get()
         for data in tqdm(dataset['n_data'], unit='network_data',
@@ -169,9 +173,14 @@ def worker_network(jobs):
             hostname = ip_utils.get_hostname_from_ip(dst_ip)
             point = point.field('hostname', hostname['hostname']).field('flagged', hostname['flagged'])
             point = point.field('private', utils.is_private_ip(dst_ip))
-            write_api.write(bucket, args.org, point)
+            cache.append(point)
+            if len(cache) >= args.cache_size:
+                write_api.write(bucket, args.org, cache)
+                cache = []
 
         jobs.task_done()
+    if len(cache) > 0:
+        write_api.write(bucket, args.org, cache)
 
 
 # Prepare jobs
