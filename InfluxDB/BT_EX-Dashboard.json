@@ -27,7 +27,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.3.2"
+      "version": "9.3.4"
     },
     {
       "type": "panel",
@@ -86,6 +86,7 @@
           "uid": "${DS_BT_EX}"
         },
         "enable": true,
+        "hide": false,
         "iconColor": "#9b00ff66",
         "mappings": {
           "id": {
@@ -115,7 +116,7 @@
         },
         "name": "Highlight protocol",
         "target": {
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport == \"${l4}\" and r.dport == ${port})",
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport == \"${l4}\" and r.dport == ${port} and r.dst =~ /^${IP:regex}$/)",
           "refId": "Anno"
         }
       },
@@ -344,7 +345,7 @@
           "zoom": 2.5
         }
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "9.3.4",
       "targets": [
         {
           "datasource": {
@@ -1047,7 +1048,7 @@
           }
         ]
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "9.3.4",
       "targets": [
         {
           "datasource": {
@@ -1581,7 +1582,8 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "_value"
+                  "_value",
+                  "142.251.37.10"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -1974,7 +1976,7 @@
           }
         ]
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "9.3.4",
       "targets": [
         {
           "datasource": {
@@ -2474,8 +2476,8 @@
       {
         "current": {
           "selected": false,
-          "text": "UDP",
-          "value": "UDP"
+          "text": "TCP",
+          "value": "TCP"
         },
         "description": "Layer 4 protocol to use as filter on \"Highlight protocol\" when enabled",
         "hide": 0,
@@ -2483,18 +2485,18 @@
         "name": "l4",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "UDP",
             "value": "UDP"
           }
         ],
-        "query": "UDP",
+        "query": "TCP",
         "skipUrlSync": false,
         "type": "textbox"
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "443",
           "value": "443"
         },
@@ -2512,17 +2514,38 @@
         "query": "443",
         "skipUrlSync": false,
         "type": "textbox"
+      },
+      {
+        "allValue": "",
+        "current": {},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_BT_EX}"
+        },
+        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport == \"${l4}\" and r.dport == ${port})\r\n  |> keep(columns: [\"dst\"])",
+        "hide": 0,
+        "includeAll": true,
+        "label": "IP",
+        "multi": true,
+        "name": "IP",
+        "options": [],
+        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport == \"${l4}\" and r.dport == ${port})\r\n  |> keep(columns: [\"dst\"])",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "2023-01-09T16:58:31.000Z",
-    "to": "2023-01-09T17:00:29.000Z"
+    "from": "2023-01-10T17:03:26.000Z",
+    "to": "2023-01-10T17:05:25.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 17,
+  "version": 30,
   "weekStart": ""
 }
