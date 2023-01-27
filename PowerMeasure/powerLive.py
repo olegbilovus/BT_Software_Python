@@ -179,8 +179,11 @@ class PowerLive:
 
     def send_to_sql(self, data):
         with self._lock:
-            self.cur.execute(self._sql_query, (data[self.fields[0]], data[self.fields[1]]))
-            self.conn.commit()
+            try:
+                self.cur.execute(self._sql_query, (data[self.fields[0]], data[self.fields[1]]))
+                self.conn.commit()
+            except sqlite3.OperationalError as e:
+                print(e)
 
     def worker_no_graph(self, start):
         while True:
