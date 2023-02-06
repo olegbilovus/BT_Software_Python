@@ -70,3 +70,5 @@ Z
 *NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
 _
 /PowerNetworkCharts/powerPacketsChartsFromSQL.py,a\e\ae6601311f8093cfd57055b96bad71e71216a157
+I
+InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d

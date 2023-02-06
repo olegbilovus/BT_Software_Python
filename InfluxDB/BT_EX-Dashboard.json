@@ -27,7 +27,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.3.4"
+      "version": "9.3.6"
     },
     {
       "type": "panel",
@@ -85,7 +85,7 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "enable": true,
+        "enable": false,
         "hide": false,
         "iconColor": "#9b00ff66",
         "mappings": {
@@ -345,7 +345,7 @@
           "zoom": 2.5
         }
       },
-      "pluginVersion": "9.3.4",
+      "pluginVersion": "9.3.6",
       "targets": [
         {
           "datasource": {
@@ -1049,7 +1049,7 @@
           }
         ]
       },
-      "pluginVersion": "9.3.4",
+      "pluginVersion": "9.3.6",
       "targets": [
         {
           "datasource": {
@@ -1271,8 +1271,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1382,8 +1381,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1488,8 +1486,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1693,8 +1690,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -1899,8 +1895,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2291,8 +2286,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2381,8 +2375,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2488,15 +2481,15 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false)\r\n  |> distinct(column: \"transport\")",
-        "description": "Layer 4 protocol to use as filter on \"Highlight protocol\" when enabled",
+        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r._field == \"private\" and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> distinct(column: \"private\")",
+        "description": "Consider the incoming traffic.\ntrue: only incoming\nfalse: only outgoing\nall: both traffic",
         "hide": 0,
         "includeAll": true,
-        "label": "Layer 4",
+        "label": "Incoming",
         "multi": true,
-        "name": "l4",
+        "name": "incoming",
         "options": [],
-        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false)\r\n  |> distinct(column: \"transport\")",
+        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r._field == \"private\" and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> distinct(column: \"private\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -2509,7 +2502,28 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport =~ /^${l4:regex}$/)\r\n  |> distinct(column: \"dport\")",
+        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r._field == \"transport\" and r.label == \"${label}\")\r\n  |> distinct()",
+        "description": "Layer 4 protocol to use as filter on \"Highlight protocol\" when enabled",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Layer 4",
+        "multi": true,
+        "name": "l4",
+        "options": [],
+        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r._field == \"transport\" and r.label == \"${label}\")\r\n  |> distinct()",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_BT_EX}"
+        },
+        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\")\r\n    and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/)\r\n  |> distinct(column: \"dport\")",
         "description": "Port to apply as filter to \"Highlight protocol\" when enabled",
         "hide": 0,
         "includeAll": true,
@@ -2517,7 +2531,7 @@
         "multi": true,
         "name": "port",
         "options": [],
-        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport =~ /^${l4:regex}$/)\r\n  |> distinct(column: \"dport\")",
+        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\")\r\n    and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/)\r\n  |> distinct(column: \"dport\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -2531,7 +2545,7 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport =~ /^${l4:regex}$/ and string(v: r.dport) =~ /^${port:regex}$/)\r\n  |> distinct(column: \"dst\")",
+        "definition": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"dport\"\r\n    or r._field == \"dst\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.transport =~ /^${l4:regex}$/ and string(v: r.dport) =~ /^${port:regex}$/)\r\n  |> distinct(column: \"dst\")",
         "description": "IP to use as filter on \"Highlight protocol\" when enabled",
         "hide": 0,
         "includeAll": true,
@@ -2539,7 +2553,7 @@
         "multi": true,
         "name": "IP",
         "options": [],
-        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"private\" or r._field == \"dport\"\r\n    or r._field == \"dst\" or r._field == \"hostname\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.private == false and r.transport =~ /^${l4:regex}$/ and string(v: r.dport) =~ /^${port:regex}$/)\r\n  |> distinct(column: \"dst\")",
+        "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"transport\" or r._field == \"dport\"\r\n    or r._field == \"dst\") and r.label == \"${label}\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => r.transport =~ /^${l4:regex}$/ and string(v: r.dport) =~ /^${port:regex}$/)\r\n  |> distinct(column: \"dst\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -2549,13 +2563,13 @@
     ]
   },
   "time": {
-    "from": "2023-01-10T15:19:36.000Z",
-    "to": "2023-01-10T15:21:35.000Z"
+    "from": "2023-01-25T17:31:55.000Z",
+    "to": "2023-01-26T18:38:23.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 46,
+  "version": 51,
   "weekStart": ""
 }
