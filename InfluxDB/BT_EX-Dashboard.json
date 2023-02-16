@@ -79,7 +79,7 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "enable": false,
+        "enable": true,
         "hide": false,
         "iconColor": "#9b00ff66",
         "mappings": {
@@ -1027,12 +1027,6 @@
                 "value": "color-background"
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byName"
-            },
-            "properties": []
           }
         ]
       },
@@ -1971,7 +1965,24 @@
           "mappings": [],
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -2015,7 +2026,7 @@
             "uid": "${DS_BT_EX}"
           },
           "hide": false,
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"flags\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport == \"TCP\"\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"src\", \"sport\", \"dport\"])\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"flags\"])\r\n  |> count()\r\n  |> rename(columns: {_value: \"\"})\r\n",
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"flags\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"src\", \"sport\", \"dport\"])\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"flags\"])\r\n  |> count()\r\n  |> rename(columns: {_value: \"\"})\r\n",
           "refId": "A"
         }
       ],
@@ -2495,13 +2506,13 @@
     ]
   },
   "time": {
-    "from": "2023-01-09T17:28:32.000Z",
-    "to": "2023-01-09T17:30:32.000Z"
+    "from": "2022-12-23T09:29:56.000Z",
+    "to": "2022-12-24T09:28:10.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 89,
+  "version": 90,
   "weekStart": ""
 }
