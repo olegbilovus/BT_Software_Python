@@ -65,3 +65,12 @@ I
 InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
 U
 %NetworkMeasure/ipPacketsToStatsSQL.py,c\9\c9042bee7fb898c7923b09286f2fa2e65b08dbf5
+F
+Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058
+:
+
+config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
+I
+PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
+B
+Utility/dbToCSV.py,4\c\4c9670c400d91f1657da23ecdbbf732a844b1c56
