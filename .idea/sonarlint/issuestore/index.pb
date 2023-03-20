@@ -37,14 +37,10 @@ S
 #PowerNetworkCharts/requirements.txt,3\0\3089ae6507cfe6f9b212cf336968bea07c8f5f38
 M
 PowerMeasure/requirements.txt,b\6\b6832815eade23283e4fdef5dd7f2e8b4cda6e6e
-O
-NetworkMeasure/requirements.txt,7\c\7c0b77d73fbdeaf914efa3f2eff353c0269690b1
 G
 NetworkMeasure/utils.py,d\8\d806d809e6fc4a2b9f54ce8d4937514714bef121
 7
 LICENSE,0\3\0398ccd0f49298b10a3d76a47800d2ebecd49859
-I
-InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
 w
 G.idea/sonarlint/issuestore/b/6/b662040252fcfe81a20ecaee0ed96b6525edf054,4\b\4bcbf7632b28988dc76af56cb3bd4f99ed41fa7c
 w
@@ -53,24 +49,11 @@ H
 Utility/script_on_all.py,1\c\1cfb95da1348f2aa3203dce3d5cb8bc114f34bc5
 M
 InfluxDB/BT_EX-Dashboard.json,3\c\3c335acaeb9e760765cf27ae9e63dcca01ba0434
-A
-InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
 V
 &PowerMeasure/powerChartsLineFromSQL.py,b\3\b35d217c70fd5b35bb1def0ed0f9ea1b804fc05f
 Z
 *NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
 _
 /PowerNetworkCharts/powerPacketsChartsFromSQL.py,a\e\ae6601311f8093cfd57055b96bad71e71216a157
-I
-InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
 U
 %NetworkMeasure/ipPacketsToStatsSQL.py,c\9\c9042bee7fb898c7923b09286f2fa2e65b08dbf5
-F
-Utility/sharedUtils.py,f\b\fb0b0c204113556a33a5abca1ea3463436062058
-:
-
-config.ini,a\3\a3369b85f2e190fd575d9636871f39c4f1253ca4
-I
-PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
-B
-Utility/dbToCSV.py,4\c\4c9670c400d91f1657da23ecdbbf732a844b1c56
