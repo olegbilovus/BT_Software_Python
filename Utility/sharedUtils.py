@@ -224,15 +224,16 @@ def get_plot_title_one_db_from_dataset(dataset):
 
 # Set options for fig, ax and plt
 def set_fig_ax(fig, ax, title, x_label, y_label, w_title, legend=False, no_grid=False, maximize=False, plt=None,
-               x_time=False):
+               x_time=False, skip_ticklabel=False):
     fig.tight_layout()
     ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    if not x_time:
-        ax.ticklabel_format(useOffset=False)
-    else:
-        ax.ticklabel_format(style='plain', axis='y')
+    if not skip_ticklabel:
+        if not x_time:
+            ax.ticklabel_format(useOffset=False)
+        else:
+            ax.ticklabel_format(style='plain', axis='y')
     if legend:
         ax.legend()
     if not no_grid:

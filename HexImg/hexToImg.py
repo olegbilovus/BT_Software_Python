@@ -130,4 +130,4 @@ while not done:
             time.sleep(1)
             break
     else:
-        done = img_jobs.empty() and img_jobs.empty()
+        done = img_jobs.empty()

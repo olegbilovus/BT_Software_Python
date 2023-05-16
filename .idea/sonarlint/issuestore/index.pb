@@ -51,9 +51,27 @@ M
 InfluxDB/BT_EX-Dashboard.json,3\c\3c335acaeb9e760765cf27ae9e63dcca01ba0434
 V
 &PowerMeasure/powerChartsLineFromSQL.py,b\3\b35d217c70fd5b35bb1def0ed0f9ea1b804fc05f
-Z
-*NetworkMeasure/packetsChartsLineFromSQL.py,d\5\d51424e8ff5fe67dd87b159b6b89c58addce5da3
-_
-/PowerNetworkCharts/powerPacketsChartsFromSQL.py,a\e\ae6601311f8093cfd57055b96bad71e71216a157
 U
 %NetworkMeasure/ipPacketsToStatsSQL.py,c\9\c9042bee7fb898c7923b09286f2fa2e65b08dbf5
+B
+Utility/dbToCSV.py,4\c\4c9670c400d91f1657da23ecdbbf732a844b1c56
+F
+PowerMeasure/README.md,e\a\eae96156a28ccc32f6e081996a3ce8d5b45aa6ad
+@
+requirements.txt,1\9\19359a61ae2446b51b549167b014da2fcf265768
+I
+InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
+O
+NetworkMeasure/requirements.txt,7\c\7c0b77d73fbdeaf914efa3f2eff353c0269690b1
+I
+PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
+A
+InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
+I
+InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
+@
+HexImg/colors.py,0\f\0f50c31700db36b46c5417e8043bd1913ec9821a
+A
+HexImg/.gitignore,0\9\0920c31093580ce45074268e100ee710249aeac5
+@
+HexImg/README.md,7\7\776ad1f5203a71d27c3e49f0002bf09d24488500
