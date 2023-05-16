@@ -1,0 +1,23 @@
+
+I
+PowerMeasure/powerLive.py,2\0\20113a0efcfd6275aa8ce6ad6841c28f875f2e73
+B
+Utility/dbToCSV.py,4\c\4c9670c400d91f1657da23ecdbbf732a844b1c56
+F
+PowerMeasure/README.md,e\a\eae96156a28ccc32f6e081996a3ce8d5b45aa6ad
+@
+requirements.txt,1\9\19359a61ae2446b51b549167b014da2fcf265768
+I
+InfluxDB/requirements.txt,f\9\f98c196fa42f0c6ad528b9804862e36baad10ad1
+O
+NetworkMeasure/requirements.txt,7\c\7c0b77d73fbdeaf914efa3f2eff353c0269690b1
+A
+InfluxDB/utils.py,b\6\b662040252fcfe81a20ecaee0ed96b6525edf054
+I
+InfluxDB/SQLtoInfluxDB.py,c\7\c710d24eefbb3064819ec291d107204a98398f5d
+@
+HexImg/colors.py,0\f\0f50c31700db36b46c5417e8043bd1913ec9821a
+A
+HexImg/.gitignore,0\9\0920c31093580ce45074268e100ee710249aeac5
+@
+HexImg/README.md,7\7\776ad1f5203a71d27c3e49f0002bf09d24488500
