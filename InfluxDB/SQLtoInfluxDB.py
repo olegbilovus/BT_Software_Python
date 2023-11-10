@@ -27,6 +27,9 @@ file_end = sharedUtils.get_file_end_from_config(config_path)
 _, p_table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'POWER')
 _, n_table_name, _ = sharedUtils.get_chart_config_from_file(config_path, 'NETWORK')
 n_dst_field = sharedUtils.get_single_value_from_config(config_path, 'NETWORK', 'dst_field')
+n_hostname_field = sharedUtils.get_single_value_from_config(config_path,
+                                                            'NETWORK',
+                                                            'hostname_field')
 
 max_data_per_thread = sharedUtils.get_single_value_from_config(config_path, 'COMMON', 'max_data_per_thread', t=int)
 
@@ -89,6 +92,8 @@ for db_path in args.db:
         p_ts_index = sharedUtils.get_timestamp_column_index(p_columns) if p_data else None
         n_ts_index = sharedUtils.get_timestamp_column_index(n_columns) if n_data else None
         n_dst_index = sharedUtils.get_column_index(n_columns, n_dst_field) if n_data else None
+        n_hostname_index = sharedUtils.get_column_index(n_columns,
+                                                        n_hostname_field) if n_data else None
 
         error_msg = 'No {} column in {} table of {}, skipping the table'
 
@@ -110,7 +115,8 @@ for db_path in args.db:
             'n_columns': n_columns,
             'p_ts_index': p_ts_index,
             'n_ts_index': n_ts_index,
-            'n_dst_index': n_dst_index
+            'n_dst_index': n_dst_index,
+            'n_hostname_index': n_hostname_index
         })
     else:
         print(f'No data in {db_path}')
@@ -161,7 +167,8 @@ def worker_network(jobs):
                          desc=f'{dataset["label"]} network data [{chunk_number}/{total_chunks}]'):
             point = Point(n_measurement).tag('label', dataset['label'])
             for i, column in enumerate(dataset['n_columns']):
-                if i != dataset['n_ts_index']:
+                if i not in [dataset['n_ts_index'],
+                             dataset['n_hostname_index']]:
                     point = point.field(column[1], data[i])
             point = point.time(datetime.fromisoformat(data[dataset['n_ts_index']]))
             dst_ip = data[dataset['n_dst_index']]
@@ -170,7 +177,8 @@ def worker_network(jobs):
                 if geo_data:
                     point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
                     point = point.field('country', geo_data['country'])
-            hostname = ip_utils.get_hostname_from_ip(dst_ip)
+            hostname = ip_utils.get_hostname_from_ip(dst_ip, hostname=data[
+                dataset['n_hostname_index']])
             point = point.field('hostname', hostname['hostname']).field('flagged', hostname['flagged'])
             point = point.field('private', utils.is_private_ip(dst_ip))
             cache.append(point)

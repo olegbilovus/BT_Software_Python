@@ -57,12 +57,15 @@ class IPUtils:
             self.geo_ips_known[ip] = self.geoip2.get_relevant_data(ip)
         return self.geo_ips_known[ip]
 
-    def get_hostname_from_ip(self, ip):
+    def get_hostname_from_ip(self, ip, hostname=None):
         if ip not in self.hostname_ips_known:
-            try:
-                self.hostname_ips_known[ip] = socket.gethostbyaddr(ip)[0]
-            except socket.herror:
-                self.hostname_ips_known[ip] = None
+            if hostname is not None:
+                self.hostname_ips_known[ip] = hostname
+            else:
+                try:
+                    self.hostname_ips_known[ip] = socket.gethostbyaddr(ip)[0]
+                except socket.herror:
+                    self.hostname_ips_known[ip] = None
             self.new_hostnames += 1
 
         if ip not in self._local_flagged_hosts_cache:
@@ -128,7 +131,8 @@ def split_dataset_in_chunks(dataset, chunk_size):
             'n_columns': dataset['n_columns'],
             'p_ts_index': dataset['p_ts_index'],
             'n_ts_index': dataset['n_ts_index'],
-            'n_dst_index': dataset['n_dst_index']
+            'n_dst_index': dataset['n_dst_index'],
+            'n_hostname_index': dataset['n_hostname_index']
         }
         chunks.append(chunk_dataset)
         if chunk_dataset['p_data']:

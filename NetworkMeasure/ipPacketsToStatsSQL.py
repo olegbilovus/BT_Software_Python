@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 _path_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,7 +43,7 @@ if args.db_reset:
 # Create the table if it doesn't exist
 try:
     c.execute(
-        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT, flags TEXT)')
+        'CREATE TABLE ' + table_name + ' (No INT PRIMARY KEY, timestamp TIMESTAMP, src TEXT, sport INT, dst TEXT, dport INT, transport TEXT, length INT, flags TEXT, hostname TEXT)')
 except sqlite3.OperationalError:
     pass
 
@@ -61,9 +62,23 @@ if not args.verbose:
 
 # Process the packets
 skipped = 0
+dns_hostnames = {}
 for i, pkt in iterator:
     ip_type = utils.get_ip_layer(pkt)
     if ip_type:
+        if pkt.haslayer(scapy.DNS):
+            dns = pkt[scapy.DNS]
+            hostnames = set()
+            if dns.ancount > 0:
+                for an in range(dns.ancount):
+                    dns_an = dns[scapy.DNSRR][an]
+                    dns_an_rdata = dns_an.rdata.decode("utf-8") if type(
+                        dns_an.rdata) is bytes else dns_an.rdata
+                    if re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
+                                dns_an_rdata) is not None:
+                        dns_hostnames[dns_an_rdata] = dns_an.rrname.decode(
+                            "utf-8")[:-1]
+
         ip = pkt[ip_type]
         transport = ip.payload
         protocol, sport, dport = utils.get_protocol_and_ports(transport)
@@ -74,8 +89,10 @@ for i, pkt in iterator:
         length = len(pkt)
         flags = str(transport.flags) if protocol == 'TCP' else None
 
-        c.execute('INSERT INTO pcap_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                  (i, ts, src, sport, dst, dport, protocol, length, flags))
+        c.execute(
+            'INSERT INTO pcap_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (i, ts, src, sport, dst, dport, protocol, length, flags,
+             dns_hostnames.get(dst)))
 
         if args.verbose:
             print(f'[#{i}] [{ts}] {src}[{sport}] -> {dst}[{dport}] {protocol} {length} {flags}')
