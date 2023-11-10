@@ -21,7 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.3.6"
+      "version": "10.2.0"
     },
     {
       "type": "panel",
@@ -79,7 +79,7 @@
           "type": "influxdb",
           "uid": "${DS_BT_EX}"
         },
-        "enable": true,
+        "enable": false,
         "hide": false,
         "iconColor": "#9b00ff66",
         "mappings": {
@@ -182,7 +182,7 @@
             "type": "influxdb",
             "uid": "${DS_BT_EX}"
           },
-          "query": "import \"join\"\r\n\r\npowerAll = from(bucket: \"BT_EX\")\r\n            |> range(start: 0)\r\n            |> filter(fn: (r) => r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\")\r\n\r\nnetworkAll = from(bucket: \"BT_EX\")\r\n            |> range(start: 0)\r\n            |> filter(fn: (r) => r._measurement == \"network\" and r.label =~ /^${label:regex}$/ and r._field == \"No\")\r\n\r\n// power\r\npowerF = powerAll\r\n            |> first()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeF: r._time, _value: 0}))\r\n\r\npowerL = powerAll\r\n            |> last()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeL: r._time, _value: 0}))\r\n\r\npowerJoin = join.inner(left: powerF, right: powerL, on: (l, r) => l._value == r._value, as: (l, r) => ({timeF: l.timeF, timeL: r.timeL, _value: 0}))\r\n\r\n// network\r\nnetworkF = networkAll\r\n            |> first()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeF: r._time, _value: 0}))\r\n\r\nnetworkL = networkAll\r\n            |> last()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeL: r._time, _value: 0}))\r\n\r\nnetworkJoin = join.inner(left: networkF, right: networkL, on: (l, r) => l._value == r._value, as: (l, r) => ({timeF: l.timeF, timeL: r.timeL, _value: 0}))\r\n\r\n// timers\r\ntimers = join.inner(left: powerJoin,\r\n          right: networkJoin,\r\n          on: (l, r) => l._value == r._value, \r\n          as: (l, r) => ({timeF: if l.timeF < r.timeF then l.timeF else r.timeF, timeL: if l.timeL > r.timeL then l.timeL else r.timeL}))\r\n\r\nt_min = timers\r\n          |> min(column: \"timeF\")\r\n          |> keep(columns: [\"timeF\"])\r\n          |> map(fn: (r) => ({r with _value: 0}))\r\n\r\nt_max = timers\r\n          |> max(column: \"timeL\")\r\n          |> keep(columns: [\"timeL\"])\r\n          |> map(fn: (r) => ({r with _value: 0}))\r\n\r\njoin.inner(left: t_min,\r\n          right: t_max,\r\n          on: (l, r) => l._value == r._value, \r\n          as: (l, r) => ({timeF: l.timeF, timeL: r.timeL}))\r\n            |> map(fn: (r) => ({r with timeF: int(v: uint(v: r.timeF)) / 1000000000}))\r\n            |> map(fn: (r) => ({r with timeL: int(v: uint(v: r.timeL)) / 1000000000}))\r\n",
+          "query": "import \"join\"\r\nimport \"array\"\r\n\r\npowerAll = from(bucket: \"BT_EX\")\r\n            |> range(start: 0)\r\n            |> filter(fn: (r) => r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\")\r\n\r\nnetworkAll = from(bucket: \"BT_EX\")\r\n            |> range(start: 0)\r\n            |> filter(fn: (r) => r._measurement == \"network\" and r.label =~ /^${label:regex}$/ and r._field == \"No\")\r\n\r\n// power\r\npowerF = powerAll\r\n            |> first()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeF: r._time, _value: 0}))\r\n\r\npowerL = powerAll\r\n            |> last()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeL: r._time, _value: 0}))\r\n\r\npowerJoin = join.inner(left: powerF, right: powerL, on: (l, r) => l._value == r._value, as: (l, r) => ({timeF: l.timeF, timeL: r.timeL, _value: 0}))\r\n\r\n// network\r\nnetworkF = networkAll\r\n            |> first()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeF: r._time, _value: 0}))\r\n\r\nnetworkL = networkAll\r\n            |> last()\r\n            |> keep(columns: [\"_time\"])\r\n            |> map(fn: (r) => ({r with timeL: r._time, _value: 0}))\r\n\r\nnetworkJoin = join.inner(left: networkF, right: networkL, on: (l, r) => l._value == r._value, as: (l, r) => ({timeF: l.timeF, timeL: r.timeL, _value: 0}))\r\n\r\n// https://community.influxdata.com/t/join-with-empty-data/26636\r\nisEmpty = (tables) => {\r\n\tcolumnsArray = tables\r\n\t\t|> columns()\r\n\t\t|> findColumn(fn: (key) => true, column: \"_value\")\r\n\treturn length(arr: columnsArray) == 0\r\n}\r\n\r\n\r\n// timers\r\nemptyTable = array.from(rows: [{timeF: time(v: uint(v: 2100-09-18T12:00:00.000000000Z)), timeL: time(v: uint(v: 1971-09-18T12:00:00.000000000Z)), _value: 0}])\r\ntimers = join.inner(left: if isEmpty(tables: powerJoin) then emptyTable else powerJoin,\r\n          right: if isEmpty(tables: networkJoin) then emptyTable else networkJoin,\r\n          on: (l, r) => l._value == r._value, \r\n          as: (l, r) => ({timeF: if l.timeF < r.timeF then l.timeF else r.timeF, timeL: if l.timeL > r.timeL then l.timeL else r.timeL}))\r\n\r\nt_min = timers\r\n          |> min(column: \"timeF\")\r\n          |> keep(columns: [\"timeF\"])\r\n          |> map(fn: (r) => ({r with _value: 0}))\r\n\r\nt_max = timers\r\n          |> max(column: \"timeL\")\r\n          |> keep(columns: [\"timeL\"])\r\n          |> map(fn: (r) => ({r with _value: 0}))\r\n\r\njoin.inner(left: t_min,\r\n          right: t_max,\r\n          on: (l, r) => l._value == r._value, \r\n          as: (l, r) => ({timeF: l.timeF, timeL: r.timeL}))\r\n            |> map(fn: (r) => ({r with timeF: int(v: uint(v: r.timeF)) / 1000000000}))\r\n            |> map(fn: (r) => ({r with timeL: int(v: uint(v: r.timeL)) / 1000000000}))\r\n",
           "refId": "A"
         }
       ],
@@ -352,7 +352,7 @@
           "zoom": 2.5
         }
       },
-      "pluginVersion": "9.3.6",
+      "pluginVersion": "10.2.0",
       "targets": [
         {
           "datasource": {
@@ -391,7 +391,7 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
+              "id": "byRegexp",
               "options": "Value"
             },
             "properties": [
@@ -464,6 +464,7 @@
             "mode": "continuous-GrYlRd"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -477,6 +478,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -573,6 +575,7 @@
             "mode": "continuous-GrYlRd"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -586,6 +589,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -767,6 +771,7 @@
             "mode": "continuous-GrYlRd"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -780,6 +785,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -978,7 +984,9 @@
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": true,
             "inspect": true
           },
@@ -1023,8 +1031,11 @@
                 ]
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-background"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           }
@@ -1039,7 +1050,9 @@
       "id": 39,
       "maxDataPoints": 500000,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "enablePagination": true,
           "fields": [
             "count"
@@ -1055,7 +1068,7 @@
           }
         ]
       },
-      "pluginVersion": "9.3.6",
+      "pluginVersion": "10.2.0",
       "targets": [
         {
           "datasource": {
@@ -1113,6 +1126,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1126,6 +1140,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 2,
             "pointSize": 5,
@@ -1268,6 +1283,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1379,7 +1395,9 @@
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": true,
             "inspect": true
           },
@@ -1424,8 +1442,11 @@
                 ]
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-background"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           }
@@ -1440,7 +1461,9 @@
       "id": 40,
       "maxDataPoints": 500000,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "enablePagination": true,
           "fields": [
             "count"
@@ -1451,7 +1474,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.3.6",
+      "pluginVersion": "10.2.0",
       "targets": [
         {
           "datasource": {
@@ -1499,7 +1522,9 @@
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": true,
             "inspect": true
           },
@@ -1544,8 +1569,11 @@
                 ]
               },
               {
-                "id": "custom.displayMode",
-                "value": "color-background"
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               },
               {
                 "id": "custom.width",
@@ -1576,7 +1604,9 @@
       "id": 33,
       "maxDataPoints": 500000,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "enablePagination": true,
           "fields": [
             "count"
@@ -1592,7 +1622,7 @@
           }
         ]
       },
-      "pluginVersion": "9.3.6",
+      "pluginVersion": "10.2.0",
       "targets": [
         {
           "datasource": {
@@ -1636,6 +1666,7 @@
             "mode": "continuous-GrYlRd"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1649,6 +1680,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1.5,
             "pointSize": 6,
@@ -1733,20 +1765,7 @@
           "mappings": [],
           "unit": "none"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "No port"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -1968,7 +1987,7 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
+              "id": "byRegexp",
               "options": "Value"
             },
             "properties": [
@@ -2130,6 +2149,7 @@
             "mode": "continuous-GrYlRd"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -2143,6 +2163,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1.5,
             "pointSize": 5,
@@ -2325,8 +2346,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 37,
-  "style": "dark",
+  "schemaVersion": 38,
   "tags": [],
   "templating": {
     "list": [
@@ -2506,13 +2526,13 @@
     ]
   },
   "time": {
-    "from": "2022-12-23T09:29:56.000Z",
-    "to": "2022-12-24T09:28:10.000Z"
+    "from": "2023-11-09T09:14:27.000Z",
+    "to": "2023-11-09T09:16:47.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 90,
+  "version": 96,
   "weekStart": ""
 }
