@@ -177,10 +177,13 @@ def worker_network(jobs):
                 if geo_data:
                     point = point.field('lat', geo_data['lat']).field('lon', geo_data['lon'])
                     point = point.field('country', geo_data['country'])
-            hostname = ip_utils.get_hostname_from_ip(dst_ip, hostname=data[
-                dataset['n_hostname_index']])
+            is_dst_private_ip = utils.is_private_ip(dst_ip)
+            if is_dst_private_ip:
+                hostname = {'hostname': None, 'flagged': False}
+            else:
+                hostname = ip_utils.get_hostname_from_ip(dst_ip, hostname=data[dataset['n_hostname_index']])
             point = point.field('hostname', hostname['hostname']).field('flagged', hostname['flagged'])
-            point = point.field('private', utils.is_private_ip(dst_ip))
+            point = point.field('private', is_dst_private_ip)
             cache.append(point)
             if len(cache) >= args.cache_size:
                 write_api.write(bucket, args.org, cache)
@@ -236,6 +239,7 @@ ip_utils.save_hostname_cache()
 
 print('\n' * (args.threads * 2))
 print(f'Not found IPs for GeoIP: {ip_utils.geoip2.not_found_ips}')
+print(f'Number of hostnames in blacklist from files: {len(ip_utils.flagged_hosts)}')
 print(f'Number of hostnames in cache: {len(ip_utils.hostname_ips_known)}')
 print(f'Number of hostnames added to cache: {ip_utils.new_hostnames}')
 print(f'Number of hostnames flagged: {ip_utils.new_flagged_hosts}')
