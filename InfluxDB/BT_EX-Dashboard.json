@@ -221,7 +221,6 @@
             }
           },
           "decimals": 5,
-          "displayName": "Country",
           "mappings": [],
           "thresholds": {
             "mode": "percentage",
@@ -282,6 +281,54 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "_start"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "_stop"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "_measurement"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
           }
         ]
       },
@@ -301,7 +348,7 @@
           },
           "name": "Basemap",
           "opacity": 1,
-          "tooltip": false,
+          "tooltip": true,
           "type": "carto"
         },
         "controls": {
@@ -315,8 +362,8 @@
         "layers": [
           {
             "config": {
-              "blur": 15,
-              "radius": 4,
+              "blur": 13,
+              "radius": 3,
               "weight": {
                 "fixed": 1,
                 "max": 1,
@@ -335,7 +382,7 @@
             },
             "name": "Layer 1",
             "opacity": 1,
-            "tooltip": false,
+            "tooltip": true,
             "type": "heatmap"
           }
         ],
@@ -359,7 +406,7 @@
             "type": "influxdb",
             "uid": "${DS_BT_EX}"
           },
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"lat\" or r._field == \"lon\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"transport\", \"src\", \"dst\", \"sport\", \"dport\"])",
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"lat\" or r._field == \"lon\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"transport\", \"src\", \"dst\", \"sport\", \"dport\"])\r\n  |> group()",
           "refId": "A"
         }
       ],
@@ -1102,7 +1149,7 @@
       "type": "table"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1110,264 +1157,263 @@
         "y": 40
       },
       "id": 38,
-      "panels": [],
-      "title": "Combined data",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_BT_EX}"
-      },
-      "description": "Shows on the same timeline the packets and the load.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
+          "description": "Shows on the same timeline the packets and the load.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
             },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "packets"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "dark-blue",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "none"
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 36
+                  },
+                  {
+                    "id": "displayName",
+                    "value": "packets"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "load"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "dark-green",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "watt"
+                  },
+                  {
+                    "id": "displayName",
+                    "value": "load"
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 24,
+            "x": 0,
+            "y": 41
+          },
+          "id": 36,
+          "maxDataPoints": 500000,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
             }
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_BT_EX}"
               },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "packets"
+              "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r.label =~ /^${label:regex}$/ and r._field == \"No\")\r\n  |> aggregateWindow(every: ${period}, fn: count)\r\n  |> rename(columns: {_value: \"packets\"})",
+              "refId": "A"
             },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-blue",
-                  "mode": "fixed"
-                }
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_BT_EX}"
               },
-              {
-                "id": "unit",
-                "value": "none"
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 36
-              },
-              {
-                "id": "displayName",
-                "value": "packets"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "load"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-green",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "watt"
-              },
-              {
-                "id": "displayName",
-                "value": "load"
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 24,
-        "x": 0,
-        "y": 41
-      },
-      "id": 36,
-      "maxDataPoints": 500000,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_BT_EX}"
-          },
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and r.label =~ /^${label:regex}$/ and r._field == \"No\")\r\n  |> aggregateWindow(every: ${period}, fn: count)\r\n  |> rename(columns: {_value: \"packets\"})",
-          "refId": "A"
+              "hide": false,
+              "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\")\r\n  |> aggregateWindow(every: ${period}, fn: mean)\r\n  |> rename(columns: {_value: \"load\"})",
+              "refId": "B"
+            }
+          ],
+          "title": "Packets/$period and load(mean)/$period",
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_BT_EX}"
           },
-          "hide": false,
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\")\r\n  |> aggregateWindow(every: ${period}, fn: mean)\r\n  |> rename(columns: {_value: \"load\"})",
-          "refId": "B"
+          "description": "A scatter plots which compare the power and the number of packets sent/received.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 1,
+                "pointSize": {
+                  "fixed": 1
+                },
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "show": "points"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 17,
+            "w": 24,
+            "x": 0,
+            "y": 52
+          },
+          "id": 22,
+          "maxDataPoints": 500000,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "series": [
+              {
+                "pointColor": {
+                  "fixed": "dark-green"
+                },
+                "pointSize": {
+                  "fixed": 15,
+                  "max": 20,
+                  "min": 1
+                },
+                "x": "power",
+                "y": "packets"
+              }
+            ],
+            "seriesMapping": "manual",
+            "tooltip": {
+              "mode": "none",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_BT_EX}"
+              },
+              "query": "nt = from(bucket: \"BT_EX\")\r\n        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n        |> filter(fn: (r) => (r._measurement == \"network\" and r.label =~ /^${label:regex}$/ and r._field == \"length\"))\r\n        |> aggregateWindow(every: ${period}, fn: count)\r\n        |> map(fn: (r) => ({_value: float(v: r._value), _time: r._time, _field: \"packets\"}))\r\n\r\npt = from(bucket: \"BT_EX\")\r\n        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n        |> filter(fn: (r) => (r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\"))\r\n        |> aggregateWindow(every: ${period}, fn: mean)\r\n        |> map(fn: (r) => ({_value: r._value, _time: r._time, _field: \"power\"}))\r\n\r\nunion(tables: [nt, pt])\r\n        |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")        ",
+              "refId": "A"
+            }
+          ],
+          "title": "Scatter plot ",
+          "type": "xychart"
         }
       ],
-      "title": "Packets/$period and load(mean)/$period",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_BT_EX}"
-      },
-      "description": "A scatter plots which compare the power and the number of packets sent/received.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "pointSize": {
-              "fixed": 1
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "show": "points"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 17,
-        "w": 24,
-        "x": 0,
-        "y": 52
-      },
-      "id": 22,
-      "maxDataPoints": 500000,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "series": [
-          {
-            "pointColor": {
-              "fixed": "dark-green"
-            },
-            "pointSize": {
-              "fixed": 15,
-              "max": 20,
-              "min": 1
-            },
-            "x": "power",
-            "y": "packets"
-          }
-        ],
-        "seriesMapping": "manual",
-        "tooltip": {
-          "mode": "none",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_BT_EX}"
-          },
-          "query": "nt = from(bucket: \"BT_EX\")\r\n        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n        |> filter(fn: (r) => (r._measurement == \"network\" and r.label =~ /^${label:regex}$/ and r._field == \"length\"))\r\n        |> aggregateWindow(every: ${period}, fn: count)\r\n        |> map(fn: (r) => ({_value: float(v: r._value), _time: r._time, _field: \"packets\"}))\r\n\r\npt = from(bucket: \"BT_EX\")\r\n        |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n        |> filter(fn: (r) => (r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\"))\r\n        |> aggregateWindow(every: ${period}, fn: mean)\r\n        |> map(fn: (r) => ({_value: r._value, _time: r._time, _field: \"power\"}))\r\n\r\nunion(tables: [nt, pt])\r\n        |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")        ",
-          "refId": "A"
-        }
-      ],
-      "title": "Scatter plot ",
-      "type": "xychart"
+      "title": "Combined data",
+      "type": "row"
     },
     {
       "collapsed": false,
@@ -1375,7 +1421,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 69
+        "y": 41
       },
       "id": 15,
       "panels": [],
@@ -1456,7 +1502,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 70
+        "y": 42
       },
       "id": 40,
       "maxDataPoints": 500000,
@@ -1599,7 +1645,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 79
+        "y": 51
       },
       "id": 33,
       "maxDataPoints": 500000,
@@ -1715,7 +1761,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 88
+        "y": 60
       },
       "id": 13,
       "maxDataPoints": 500000,
@@ -1769,9 +1815,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 7,
+        "w": 9,
         "x": 0,
-        "y": 97
+        "y": 69
       },
       "id": 21,
       "maxDataPoints": 500000,
@@ -1812,76 +1858,6 @@
         }
       ],
       "title": "Ports usage",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_BT_EX}"
-      },
-      "description": "Shows how many hostnames have been flagged as adware or malware. False mean not flagged. It shows also how many distinct hostnames have been contacted.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 5,
-        "x": 7,
-        "y": 97
-      },
-      "id": 27,
-      "maxDataPoints": 500000,
-      "options": {
-        "displayLabels": [
-          "name"
-        ],
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "values": [
-            "percent",
-            "value"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "/.*/",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "2.0.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_BT_EX}"
-          },
-          "hide": false,
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"flagged\" or r._field == \"hostname\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"transport\", \"src\", \"sport\", \"dport\"])\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"flagged\"])\r\n  |> distinct(column: \"hostname\")\r\n  |> count()\r\n  |> rename(columns: {_value: \"\"})\r\n",
-          "refId": "A"
-        }
-      ],
-      "title": "Number of hostnames flagged as adware or malware",
-      "transformations": [],
       "type": "piechart"
     },
     {
@@ -1931,9 +1907,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 97
+        "w": 15,
+        "x": 9,
+        "y": 69
       },
       "id": 23,
       "maxDataPoints": 500000,
@@ -2005,9 +1981,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
+        "w": 7,
         "x": 0,
-        "y": 106
+        "y": 78
       },
       "id": 20,
       "maxDataPoints": 500000,
@@ -2057,6 +2033,146 @@
         "type": "influxdb",
         "uid": "${DS_BT_EX}"
       },
+      "description": "Shows how many hostnames have been flagged as adware or malware. False mean not flagged. It shows also how many distinct hostnames have been contacted.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 5,
+        "x": 7,
+        "y": 78
+      },
+      "id": 27,
+      "maxDataPoints": 500000,
+      "options": {
+        "displayLabels": [
+          "name"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "2.0.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "hide": false,
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"flagged\" or r._field == \"hostname\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"transport\", \"src\", \"sport\", \"dport\"])\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"flagged\"])\r\n  |> distinct(column: \"hostname\")\r\n  |> count()\r\n  |> rename(columns: {_value: \"\"})\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Number of hostnames flagged as adware or malware",
+      "transformations": [],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_BT_EX}"
+      },
+      "description": "Shows how many packets have been flagged as adware or malware. False means not flagged.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 5,
+        "x": 12,
+        "y": 78
+      },
+      "id": 41,
+      "maxDataPoints": 500000,
+      "options": {
+        "displayLabels": [
+          "name"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "2.0.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "hide": false,
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"flagged\" or r._field == \"hostname\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/)\r\n  |> drop(columns: [\"private\", \"transport\", \"src\", \"sport\", \"dport\"])\r\n  |> set(key: \"_value\", value: \"1\")\r\n  |> toInt()\r\n  |> group(columns: [\"flagged\"])\r\n  |> count()\r\n  |> rename(columns: {_value: \"\"})\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Number of packets flagged as adware or malware",
+      "transformations": [],
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_BT_EX}"
+      },
       "description": "Shows the number and proportion of the protocols used at layer 4 (transport). Combines with the port Pie chart it can be useful to know if QUICK was used or other protocols.",
       "fieldConfig": {
         "defaults": {
@@ -2077,9 +2193,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 106
+        "w": 7,
+        "x": 17,
+        "y": 78
       },
       "id": 17,
       "maxDataPoints": 500000,
@@ -2125,224 +2241,223 @@
       "type": "piechart"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 115
+        "y": 87
       },
       "id": 19,
-      "panels": [],
-      "title": "Power",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "${DS_BT_EX}"
-      },
-      "description": "Shows the total power consumption.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1.5,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "watt"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "load"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "load"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 116
-      },
-      "id": 10,
-      "maxDataPoints": 50000,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
+      "panels": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_BT_EX}"
           },
-          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\")\r\n  |> aggregateWindow(every: ${period}, fn: sum)",
-          "refId": "A"
-        }
-      ],
-      "title": "Power consumption (sum) / $period",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "description": "Shows how many time a range of values have been captured",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "fillOpacity": 80,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "watt"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "load"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "load"
-              }
-            ]
-          },
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "load"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
+          "description": "Shows the total power consumption.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "scheme",
+                "hideFrom": {
                   "legend": false,
                   "tooltip": false,
-                  "viz": true
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1.5,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "load"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "load"
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 116
-      },
-      "id": 26,
-      "maxDataPoints": 50000,
-      "options": {
-        "bucketOffset": 0,
-        "combine": false,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        }
-      },
-      "pluginVersion": "9.3.1",
-      "targets": [
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 7
+          },
+          "id": 10,
+          "maxDataPoints": 50000,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_BT_EX}"
+              },
+              "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"power\" and r.label =~ /^${label:regex}$/ and r._field == \"load\")\r\n  |> aggregateWindow(every: ${period}, fn: sum)",
+              "refId": "A"
+            }
+          ],
+          "title": "Power consumption (sum) / $period",
+          "type": "timeseries"
+        },
         {
           "datasource": {
             "type": "datasource",
             "uid": "-- Dashboard --"
           },
-          "panelId": 9,
-          "refId": "A"
+          "description": "Shows how many time a range of values have been captured",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "fillOpacity": 80,
+                "gradientMode": "scheme",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 1
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "load"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "load"
+                  }
+                ]
+              },
+              {
+                "__systemRef": "hideSeriesFrom",
+                "matcher": {
+                  "id": "byNames",
+                  "options": {
+                    "mode": "exclude",
+                    "names": [
+                      "load"
+                    ],
+                    "prefix": "All except:",
+                    "readOnly": true
+                  }
+                },
+                "properties": [
+                  {
+                    "id": "custom.hideFrom",
+                    "value": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 7
+          },
+          "id": 26,
+          "maxDataPoints": 50000,
+          "options": {
+            "bucketOffset": 0,
+            "combine": false,
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          },
+          "pluginVersion": "9.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+              },
+              "panelId": 9,
+              "refId": "A"
+            }
+          ],
+          "title": "Histogram power consumption (mean) / $period",
+          "type": "histogram"
         }
       ],
-      "title": "Histogram power consumption (mean) / $period",
-      "type": "histogram"
+      "title": "Power",
+      "type": "row"
     }
   ],
   "refresh": false,
@@ -2527,12 +2642,12 @@
   },
   "time": {
     "from": "2023-11-09T09:14:27.000Z",
-    "to": "2023-11-09T09:16:47.000Z"
+    "to": "2023-11-09T09:40:07.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 96,
+  "version": 103,
   "weekStart": ""
 }
