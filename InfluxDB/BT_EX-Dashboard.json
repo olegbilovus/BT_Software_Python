@@ -21,7 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.2.0"
+      "version": "10.3.0-63516"
     },
     {
       "type": "panel",
@@ -39,7 +39,7 @@
       "type": "panel",
       "id": "marcusolsson-treemap-panel",
       "name": "Treemap",
-      "version": "2.0.0"
+      "version": "2.0.1"
     },
     {
       "type": "panel",
@@ -399,7 +399,7 @@
           "zoom": 2.5
         }
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "10.3.0-63516",
       "targets": [
         {
           "datasource": {
@@ -1115,7 +1115,7 @@
           }
         ]
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "10.3.0-63516",
       "targets": [
         {
           "datasource": {
@@ -1520,7 +1520,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "10.3.0-63516",
       "targets": [
         {
           "datasource": {
@@ -1643,7 +1643,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 24,
+        "w": 13,
         "x": 0,
         "y": 51
       },
@@ -1668,7 +1668,7 @@
           }
         ]
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "10.3.0-63516",
       "targets": [
         {
           "datasource": {
@@ -1699,6 +1699,85 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_BT_EX}"
+      },
+      "description": "Shows how many packets have been flagged as adware or malware. False means not flagged.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 11,
+        "x": 13,
+        "y": 51
+      },
+      "id": 42,
+      "maxDataPoints": 500000,
+      "options": {
+        "displayLabels": [
+          "name"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "allValues"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "2.0.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_BT_EX}"
+          },
+          "hide": false,
+          "query": "from(bucket: \"BT_EX\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"network\" and (r._field == \"private\" or r._field == \"transport\" or r._field == \"src\"\r\n    or r._field == \"dst\" or r._field == \"sport\" or r._field == \"dport\" or r._field == \"flagged\" or r._field == \"hostname\")\r\n    and r.label =~ /^${label:regex}$/)\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => string(v: r.private) =~ /^${incoming:regex}$/ and r.transport =~ /^${l4:regex}$/\r\n    and r.src =~ /^${src:regex}$/ and r.dst =~ /^${dst:regex}$/\r\n    and string(v: r.sport) =~ /^${sport:regex}$/ and string(v: r.dport) =~ /^${dport:regex}$/ and r.flagged == true)\r\n    \r\n  |> group(columns: [\"hostname\"])\r\n  |> drop(columns: [\"private\", \"transport\", \"src\", \"sport\", \"dport\", \"dst\", \"flagged\", \"_measurement\", \"_time\", \"_start\", \"_stop\"])\r\n  |> count(column: \"label\")\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Flagged as adware or malware hostname distribution",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "valueLabel": "hostname"
+          }
+        }
+      ],
+      "type": "piechart"
     },
     {
       "datasource": {
@@ -2460,8 +2539,8 @@
       "type": "row"
     }
   ],
-  "refresh": false,
-  "schemaVersion": 38,
+  "refresh": "",
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": [
@@ -2648,6 +2727,6 @@
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 103,
+  "version": 5,
   "weekStart": ""
 }
