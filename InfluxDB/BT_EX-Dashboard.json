@@ -1643,7 +1643,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
+        "w": 12,
         "x": 0,
         "y": 51
       },
@@ -1724,8 +1724,8 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 11,
-        "x": 13,
+        "w": 12,
+        "x": 12,
         "y": 51
       },
       "id": 42,
@@ -1746,17 +1746,17 @@
         "pieType": "pie",
         "reduceOptions": {
           "calcs": [
-            "allValues"
+            "last"
           ],
-          "fields": "",
-          "values": true
+          "fields": "/.*/",
+          "values": false
         },
         "tooltip": {
           "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "2.0.4",
+      "pluginVersion": "10.3.0-63516",
       "targets": [
         {
           "datasource": {
@@ -2539,7 +2539,7 @@
       "type": "row"
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 39,
   "tags": [],
   "templating": {
@@ -2727,6 +2727,6 @@
   "timezone": "",
   "title": "BT_EX-Dashboard",
   "uid": "JVl3XRcVk",
-  "version": 5,
+  "version": 7,
   "weekStart": ""
 }
