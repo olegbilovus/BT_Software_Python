@@ -131,3 +131,4 @@ dmypy.json
 # SQLite3 files
 *.sqlite3
 *.db
+.hostname_cache
